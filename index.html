@@ -4,7 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>claude-101</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&display=swap"
+    />
+    <title>Adventure.AI — Plan less. Wander more.</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("adventure.theme");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var mode = stored || (prefersDark ? "dark" : "light");
+          if (mode === "dark") document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = mode;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

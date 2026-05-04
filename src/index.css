@@ -1,4 +1,95 @@
-/* tailwindcss base */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* 60% neutral base */
+    --bg: 246 246 241;
+    --bg-elevated: 252 252 248;
+
+    /* 30% surface — cards, sections, sidebars */
+    --surface: 255 255 255;
+    --surface-2: 239 239 232;
+    --surface-hover: 234 234 226;
+
+    /* 10% accent */
+    --accent: 31 95 58;
+    --accent-hover: 24 78 47;
+    --accent-soft: 31 95 58;
+    --accent-fg: 255 255 255;
+
+    /* text */
+    --fg: 21 23 26;
+    --fg-muted: 90 96 102;
+    --fg-subtle: 138 142 148;
+
+    /* lines */
+    --line: 226 226 217;
+    --line-strong: 200 201 191;
+
+    /* state */
+    --shadow-color: 30 41 59;
+  }
+
+  .dark {
+    --bg: 15 17 16;
+    --bg-elevated: 22 25 23;
+
+    --surface: 24 27 25;
+    --surface-2: 31 34 31;
+    --surface-hover: 38 42 38;
+
+    --accent: 201 243 30;
+    --accent-hover: 181 221 24;
+    --accent-soft: 201 243 30;
+    --accent-fg: 15 17 16;
+
+    --fg: 237 239 233;
+    --fg-muted: 154 160 154;
+    --fg-subtle: 116 122 116;
+
+    --line: 39 42 40;
+    --line-strong: 60 64 60;
+
+    --shadow-color: 0 0 0;
+  }
+
+  html,
+  body,
+  #root {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--fg));
+  }
+
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: rgb(var(--line));
+  }
+
+  ::selection {
+    background-color: rgb(var(--accent) / 0.25);
+    color: rgb(var(--fg));
+  }
+}
+
+@layer utilities {
+  .ring-accent-glow {
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.4),
+      0 8px 32px -8px rgb(var(--accent) / 0.35);
+  }
+  .surface-shadow {
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.04),
+      0 8px 24px -12px rgb(var(--shadow-color) / 0.08);
+  }
+  .surface-shadow-lg {
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.06),
+      0 24px 64px -24px rgb(var(--shadow-color) / 0.18);
+  }
+}
