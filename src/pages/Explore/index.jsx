@@ -40,16 +40,17 @@ export function ExplorePage() {
         <div className="grid lg:grid-cols-2 gap-10 items-end mb-10">
           <div>
             <motion.span
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent"
             >
               Atlas · {DESTINATIONS.length} routes
             </motion.span>
             <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
+              initial={{ opacity: 0, y: 60, filter: "blur(12px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.08, duration: 1, ease: [0.22, 1, 0.36, 1] }}
               className="mt-3 text-5xl sm:text-7xl font-bold tracking-tight text-fg leading-[1.05]"
             >
               Find your
@@ -58,9 +59,9 @@ export function ExplorePage() {
             </motion.h1>
           </div>
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col gap-4"
           >
             <Input
@@ -77,11 +78,16 @@ export function ExplorePage() {
               className="!h-14 !rounded-2xl"
             />
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat) => {
+              {CATEGORIES.map((cat, i) => {
                 const isActive = active === cat.value;
                 return (
-                  <button
+                  <motion.button
                     key={cat.value}
+                    initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.2 + i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.1, y: -3 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setActive(cat.value)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition ${
                       isActive
@@ -90,7 +96,7 @@ export function ExplorePage() {
                     }`}
                   >
                     <Icon icon={cat.icon} /> {cat.label}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -100,8 +106,11 @@ export function ExplorePage() {
         {featured && (
           <motion.button
             key={featured.id}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 60, scale: 0.95, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.02, y: -6, boxShadow: "0 30px 80px -20px rgba(0,0,0,0.5)" }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => goPlan(featured.name)}
             className="relative w-full h-[420px] sm:h-[520px] rounded-3xl overflow-hidden group border border-line surface-shadow text-left"
           >
@@ -144,10 +153,12 @@ export function ExplorePage() {
                 <motion.button
                   key={d.id}
                   layout
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.35, delay: i * 0.04 }}
+                  initial={{ opacity: 0, y: 40, scale: 0.92 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9, filter: "blur(6px)" }}
+                  transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ scale: 1.05, y: -8, boxShadow: "0 25px 60px -15px rgba(0,0,0,0.4)", transition: { duration: 0.35, ease: "easeOut" } }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => goPlan(d.name)}
                   className={`relative w-full ${
                     i % 3 === 1 ? "h-[420px]" : "h-[320px]"
@@ -178,11 +189,21 @@ export function ExplorePage() {
         </AnimatePresence>
 
         {items.length === 0 && (
-          <div className="text-center py-24">
-            <Icon
-              icon="mdi:compass-off-outline"
-              className="text-6xl mx-auto mb-4 text-fg-subtle"
-            />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="text-center py-24"
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, -10, 0] }}
+              transition={{ duration: 1.5, delay: 0.3 }}
+            >
+              <Icon
+                icon="mdi:compass-off-outline"
+                className="text-6xl mx-auto mb-4 text-fg-subtle"
+              />
+            </motion.div>
             <p className="text-lg text-fg-muted">Nothing matches that yet.</p>
             <button
               onClick={() => {
@@ -193,7 +214,7 @@ export function ExplorePage() {
             >
               Reset filters
             </button>
-          </div>
+          </motion.div>
         )}
       </section>
     </div>

@@ -1,58 +1,141 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { Icon } from "@iconify/react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.15 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 50, filter: "blur(8px)" },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const buttonPop = {
+  hidden: { opacity: 0, scale: 0.7, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export function CTA() {
   const navigate = useNavigate();
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
+  const imgY = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"]);
+  const imgScale = useTransform(scrollYProgress, [0, 0.5, 1], [1.1, 1, 1.05]);
+  const cardY = useTransform(scrollYProgress, [0, 0.5], [60, 0]);
+  const cardRotate = useTransform(scrollYProgress, [0, 0.5], [2, 0]);
 
   return (
-    <section className="px-6 pb-24 sm:pb-28 max-w-7xl mx-auto">
+    <section ref={ref} className="px-6 pb-24 sm:pb-28 max-w-7xl mx-auto">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        style={{ y: cardY, rotate: cardRotate }}
+        initial={{ opacity: 0, y: 80, scale: 0.92, filter: "blur(10px)" }}
+        whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        whileHover={{ scale: 1.01 }}
         className="relative rounded-3xl overflow-hidden bg-surface border border-line surface-shadow-lg"
       >
         <div className="grid lg:grid-cols-12 items-center">
-          <div className="lg:col-span-7 px-8 py-14 sm:px-14 sm:py-20">
-            <span className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent mb-5">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="lg:col-span-7 px-8 py-14 sm:px-14 sm:py-20"
+          >
+            <motion.span
+              variants={fadeUp}
+              className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent mb-5"
+            >
               Ready when you are
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-fg leading-tight tracking-tight">
+            </motion.span>
+            <motion.h2
+              variants={fadeUp}
+              className="text-4xl sm:text-5xl font-bold text-fg leading-tight tracking-tight"
+            >
               Your next adventure is{" "}
-              <span className="text-accent">one prompt away.</span>
-            </h2>
-            <p className="mt-5 text-fg-muted text-lg max-w-lg leading-relaxed">
+              <motion.span
+                className="text-accent inline-block"
+                whileInView={{
+                  backgroundSize: ["0% 4px", "100% 4px"],
+                }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                style={{
+                  backgroundImage: "linear-gradient(rgb(var(--accent)), rgb(var(--accent)))",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "0 100%",
+                  backgroundSize: "0% 4px",
+                }}
+              >
+                one prompt away.
+              </motion.span>
+            </motion.h2>
+            <motion.p
+              variants={fadeUp}
+              className="mt-5 text-fg-muted text-lg max-w-lg leading-relaxed"
+            >
               No accounts, no clutter. Type where you want to go and we'll
               handle the rest.
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Button
-                type="primary"
-                size="large"
-                onClick={() => navigate("/builder")}
-                icon={<Icon icon="mdi:auto-fix" />}
-                className="!h-12 !px-7 !text-base !font-semibold"
+            </motion.p>
+            <motion.div
+              variants={fadeUp}
+              className="mt-9 flex flex-wrap gap-3"
+            >
+              <motion.div
+                variants={buttonPop}
+                whileHover={{ scale: 1.1, y: -4 }}
+                whileTap={{ scale: 0.92 }}
               >
-                Build my trip
-              </Button>
-              <Button
-                size="large"
-                onClick={() => navigate("/explore")}
-                className="!h-12 !px-7 !text-base !font-semibold"
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => navigate("/builder")}
+                  icon={<Icon icon="mdi:auto-fix" />}
+                  className="!h-12 !px-7 !text-base !font-semibold"
+                >
+                  Build my trip
+                </Button>
+              </motion.div>
+              <motion.div
+                variants={buttonPop}
+                whileHover={{ scale: 1.1, y: -4 }}
+                whileTap={{ scale: 0.92 }}
               >
-                Explore routes
-              </Button>
-            </div>
-          </div>
+                <Button
+                  size="large"
+                  onClick={() => navigate("/explore")}
+                  className="!h-12 !px-7 !text-base !font-semibold"
+                >
+                  Explore routes
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
 
-          <div className="hidden lg:block lg:col-span-5 relative h-full min-h-[420px]">
-            <img
+          <div className="hidden lg:block lg:col-span-5 relative h-full min-h-[420px] overflow-hidden">
+            <motion.img
               src="https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?auto=format&fit=crop&w=1400&q=80"
               alt="Adventure ahead"
               className="absolute inset-0 w-full h-full object-cover"
+              style={{ y: imgY, scale: imgScale }}
             />
             <div className="absolute inset-0 bg-gradient-to-l from-transparent to-surface" />
           </div>

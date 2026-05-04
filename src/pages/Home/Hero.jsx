@@ -2,13 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input, Button } from "antd";
 import { Icon } from "@iconify/react";
-import { motion, AnimatePresence } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { useTypewriter } from "../../hooks/useTypewriter";
-
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const HERO_BG =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=80";
@@ -81,24 +76,16 @@ export function Hero() {
   const [coordIdx, setCoordIdx] = useState(0);
   const navigate = useNavigate();
   const heroRef = useRef(null);
-  const bgRef = useRef(null);
 
-  useGSAP(
-    () => {
-      gsap.to(bgRef.current, {
-        yPercent: 18,
-        scale: 1.12,
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-    },
-    { scope: heroRef }
-  );
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 0.5], [0.55, 0.85]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   useEffect(() => {
     const id = setInterval(
@@ -131,13 +118,19 @@ export function Hero() {
       ref={heroRef}
       className="relative h-screen min-h-[780px] w-full overflow-hidden"
     >
-      <div
-        ref={bgRef}
-        style={{ backgroundImage: `url(${HERO_BG})` }}
+      <motion.div
+        style={{
+          backgroundImage: `url(${HERO_BG})`,
+          y: bgY,
+          scale: bgScale,
+        }}
         className="absolute inset-0 -top-20 bg-cover bg-center will-change-transform"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-bg" />
+      <motion.div
+        style={{ opacity: overlayOpacity }}
+        className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-bg"
+      />
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-transparent" />
 
       <svg
@@ -175,22 +168,25 @@ export function Hero() {
         <rect width="100%" height="100%" fill="url(#topo)" />
       </svg>
 
-      <div className="relative z-10 h-full grid lg:grid-cols-12 gap-12 items-center px-6 sm:px-10 max-w-7xl mx-auto pt-24 pb-20">
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 h-full grid lg:grid-cols-12 gap-12 items-center px-6 sm:px-10 max-w-7xl mx-auto pt-24 pb-20"
+      >
         <div className="lg:col-span-7">
           <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="inline-flex items-center gap-2.5"
           >
             <div className="relative w-12 h-12 shrink-0 rounded-full">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`icon-${coordIdx}`}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ opacity: 0, scale: 0.3, rotate: -90 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.3, rotate: 90 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
                   <motion.div
@@ -236,10 +232,10 @@ export function Hero() {
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={`temp-${coordIdx}`}
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.4 }}
                     className="absolute inset-0 text-white text-sm font-bold tabular-nums leading-none"
                   >
                     {COORDS[coordIdx].temp > 0 ? "+" : ""}
@@ -255,10 +251,10 @@ export function Hero() {
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={`name-${coordIdx}`}
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -3 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                    transition={{ duration: 0.4 }}
                     className="absolute inset-0 text-[9px] font-mono font-bold tracking-[0.25em] leading-none whitespace-nowrap"
                   >
                     <span className="text-white/85">
@@ -273,12 +269,15 @@ export function Hero() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
+            initial={{ opacity: 0, y: 80, filter: "blur(12px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 font-bold tracking-tighter leading-[0.9] drop-shadow-2xl select-none"
           >
-            <span
+            <motion.span
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               className="block text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] uppercase"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
@@ -289,7 +288,7 @@ export function Hero() {
               }}
             >
               Plan less.
-            </span>
+            </motion.span>
 
             <div className="relative inline-block my-2 sm:my-3">
               <div className="relative text-5xl sm:text-6xl md:text-7xl lg:text-[6.5rem] text-accent leading-[0.9]">
@@ -297,11 +296,11 @@ export function Hero() {
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={ACTIONS[actionIdx]}
-                    initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0)" }}
-                    exit={{ opacity: 0, y: -24, filter: "blur(6px)" }}
+                    initial={{ opacity: 0, y: 50, filter: "blur(10px)", scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0)", scale: 1 }}
+                    exit={{ opacity: 0, y: -50, filter: "blur(10px)", scale: 0.9 }}
                     transition={{
-                      duration: 0.45,
+                      duration: 0.55,
                       ease: [0.22, 1, 0.36, 1],
                     }}
                     className="absolute left-0 top-0 inline-block"
@@ -338,7 +337,10 @@ export function Hero() {
               </div>
             </div>
 
-            <span
+            <motion.span
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="block text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] uppercase"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
@@ -349,13 +351,14 @@ export function Hero() {
               }}
             >
               more.
-            </span>
+            </motion.span>
           </motion.h1>
 
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: "left" }}
             className="mt-6 flex items-center gap-3 text-[11px] font-mono tracking-[0.3em] text-white/55 uppercase"
           >
             <span className="text-white/70">
@@ -366,11 +369,13 @@ export function Hero() {
             <span className="h-px flex-1 max-w-16 bg-gradient-to-r from-accent/60 to-transparent" />
             <div className="flex gap-1.5">
               {ACTIONS.map((a, i) => (
-                <button
+                <motion.button
                   key={a}
                   type="button"
                   onClick={() => setActionIdx(i)}
                   aria-label={`Show ${a}`}
+                  whileHover={{ scale: 1.5 }}
+                  whileTap={{ scale: 0.8 }}
                   className={`h-1 rounded-full transition-all duration-300 ${
                     i === actionIdx
                       ? "w-7 bg-accent"
@@ -382,9 +387,9 @@ export function Hero() {
           </motion.div>
 
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.25 }}
+            initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="mt-7 text-lg sm:text-xl text-white/85 max-w-xl leading-relaxed"
           >
             Tell us where your heart is pulling you. AI builds a day-wise
@@ -392,12 +397,16 @@ export function Hero() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
+            initial={{ opacity: 0, y: 50, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10 max-w-xl relative"
           >
-            <div className="rounded-2xl bg-bg-elevated border border-line surface-shadow-lg pl-6 pr-2 py-2 flex flex-col sm:flex-row gap-2 items-stretch focus-within:ring-2 focus-within:ring-accent/40 transition">
+            <motion.div
+              whileHover={{ scale: 1.01, boxShadow: "0 25px 80px -20px rgba(0,0,0,0.5)" }}
+              transition={{ duration: 0.3 }}
+              className="rounded-2xl bg-bg-elevated border border-line surface-shadow-lg pl-6 pr-2 py-2 flex flex-col sm:flex-row gap-2 items-stretch focus-within:ring-2 focus-within:ring-accent/40 transition"
+            >
               <div className="flex-1 flex flex-col py-1.5">
                 <span className="text-[10px] font-bold tracking-[0.3em] text-fg-subtle uppercase">
                   Destination
@@ -411,29 +420,44 @@ export function Hero() {
                   className="!bg-transparent !text-fg !text-base !p-0 placeholder:!text-fg-subtle"
                 />
               </div>
-              <Button
-                type="primary"
-                size="large"
-                onClick={() => start()}
-                icon={<Icon icon="mdi:airplane-takeoff" />}
-                className="!h-12 !px-6 !font-semibold sm:!self-center"
+              <motion.div
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
               >
-                Depart
-              </Button>
-            </div>
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={() => start()}
+                  icon={<Icon icon="mdi:airplane-takeoff" />}
+                  className="!h-12 !px-6 !font-semibold sm:!self-center"
+                >
+                  Depart
+                </Button>
+              </motion.div>
+            </motion.div>
 
             <div className="mt-4 flex flex-wrap gap-2 items-center">
-              <span className="text-[10px] text-white/60 uppercase tracking-[0.3em] mr-1">
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="text-[10px] text-white/60 uppercase tracking-[0.3em] mr-1"
+              >
                 Or try
-              </span>
-              {CHIPS.map((c) => (
-                <button
+              </motion.span>
+              {CHIPS.map((c, i) => (
+                <motion.button
                   key={c.label}
+                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.85 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ scale: 1.1, y: -3 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => start(c.label)}
-                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/85 hover:bg-white/20 hover:border-white/40 hover:scale-105 transition backdrop-blur"
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/85 hover:bg-white/20 hover:border-white/40 transition backdrop-blur"
                 >
                   <Icon icon={c.icon} /> {c.label}
-                </button>
+                </motion.button>
               ))}
             </div>
           </motion.div>
@@ -441,25 +465,37 @@ export function Hero() {
 
         <div className="hidden lg:flex lg:col-span-5 justify-end items-center">
           <motion.div
-            initial={{ opacity: 0, y: 30, rotate: -3 }}
-            animate={{ opacity: 1, y: 0, rotate: 2 }}
+            initial={{ opacity: 0, y: 80, rotate: -6, scale: 0.85, filter: "blur(12px)" }}
+            animate={{ opacity: 1, y: 0, rotate: 2, scale: 1, filter: "blur(0px)" }}
             transition={{
-              duration: 0.9,
-              delay: 0.5,
+              duration: 1.2,
+              delay: 0.6,
               ease: [0.22, 1, 0.36, 1],
             }}
-            whileHover={{ rotate: 0, scale: 1.02 }}
+            whileHover={{ rotate: 0, scale: 1.04, y: -8 }}
             className="relative w-full max-w-[420px]"
           >
-            <div className="absolute -inset-10 bg-accent/15 blur-3xl rounded-full -z-10" />
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.15, 0.25, 0.15],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -inset-10 bg-accent/15 blur-3xl rounded-full -z-10"
+            />
 
             <div className="relative rounded-3xl bg-bg-elevated border border-line shadow-[0_40px_100px_-30px_rgba(0,0,0,0.7)] overflow-hidden">
               <div className="flex items-center justify-between px-6 py-4 border-b border-line bg-surface-2">
                 <div className="flex items-center gap-2 text-xs font-mono">
-                  <Icon
-                    icon="mdi:airplane-takeoff"
-                    className="text-accent text-base"
-                  />
+                  <motion.div
+                    animate={{ rotate: [0, -15, 15, 0] }}
+                    transition={{ duration: 2, delay: 2, repeat: Infinity, repeatDelay: 5 }}
+                  >
+                    <Icon
+                      icon="mdi:airplane-takeoff"
+                      className="text-accent text-base"
+                    />
+                  </motion.div>
                   <span className="font-bold text-fg tracking-wider">
                     FLIGHT AI-2206
                   </span>
@@ -482,10 +518,15 @@ export function Hero() {
                   </div>
                 </div>
                 <div className="flex flex-col items-center px-2">
-                  <Icon
-                    icon="mdi:airplane"
-                    className="text-2xl text-accent rotate-90"
-                  />
+                  <motion.div
+                    animate={{ x: [0, 6, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Icon
+                      icon="mdi:airplane"
+                      className="text-2xl text-accent rotate-90"
+                    />
+                  </motion.div>
                   <div className="w-12 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent mt-1" />
                 </div>
                 <div className="text-right">
@@ -526,10 +567,15 @@ export function Hero() {
 
               <div className="px-6 py-5 space-y-3 relative">
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon
-                    icon="mdi:sparkles"
-                    className="text-accent text-sm"
-                  />
+                  <motion.div
+                    animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                  >
+                    <Icon
+                      icon="mdi:sparkles"
+                      className="text-accent text-sm"
+                    />
+                  </motion.div>
                   <span className="text-[10px] font-bold tracking-[0.3em] text-fg-subtle">
                     AI ITINERARY · LIVE
                   </span>
@@ -548,9 +594,12 @@ export function Hero() {
               <div className="px-6 py-3.5 border-t border-line bg-surface-2 flex items-center justify-between gap-4">
                 <div className="flex items-end gap-[2px] h-6">
                   {Array.from({ length: 32 }).map((_, i) => (
-                    <span
+                    <motion.span
                       key={i}
-                      className="bg-fg block"
+                      initial={{ scaleY: 0 }}
+                      animate={{ scaleY: 1 }}
+                      transition={{ delay: 1.8 + i * 0.03, duration: 0.3 }}
+                      className="bg-fg block origin-bottom"
                       style={{
                         width: i % 4 === 0 ? "2.5px" : "1.5px",
                         height: `${50 + ((i * 37) % 50)}%`,
@@ -566,20 +615,20 @@ export function Hero() {
 
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.8, duration: 0.6 }}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5"
       >
         <span className="text-[10px] uppercase tracking-[0.4em] text-white/55 font-mono">
           SCROLL
         </span>
         <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           className="text-white/60"
         >
           <Icon icon="mdi:chevron-down" className="text-xl" />

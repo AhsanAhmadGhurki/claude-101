@@ -62,31 +62,37 @@ export function TripBuilderPage() {
     <div className="pt-32 pb-24 px-6 max-w-7xl mx-auto">
       <div className="mb-12 max-w-3xl">
         <motion.span
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent"
         >
           Studio
         </motion.span>
         <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
+          initial={{ opacity: 0, y: 60, filter: "blur(12px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ delay: 0.08, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="mt-3 text-5xl sm:text-6xl font-bold text-fg leading-tight tracking-tight"
         >
           Where to next?
         </motion.h1>
-        <p className="mt-4 text-fg-muted text-lg leading-relaxed">
+        <motion.p
+          initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ delay: 0.15, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-4 text-fg-muted text-lg leading-relaxed"
+        >
           Describe your trip in a sentence. The AI handles itinerary, packing,
           and tips.
-        </p>
+        </motion.p>
       </div>
 
       <div className="grid lg:grid-cols-12 gap-6">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          initial={{ opacity: 0, y: 60, scale: 0.95, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          transition={{ delay: 0.15, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-7 rounded-3xl bg-surface border border-line surface-shadow p-7 sm:p-8"
         >
           <div className="flex items-center justify-between mb-3">
@@ -97,7 +103,11 @@ export function TripBuilderPage() {
               {prompt.length} / 240
             </span>
           </div>
-          <div className="rounded-2xl border border-line bg-surface-2 px-4 py-3 focus-within:border-accent transition">
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-2xl border border-line bg-surface-2 px-4 py-3 focus-within:border-accent transition"
+          >
             <Input.TextArea
               autoSize={{ minRows: 3, maxRows: 5 }}
               variant="borderless"
@@ -107,17 +117,22 @@ export function TripBuilderPage() {
               onChange={(e) => setPrompt(e.target.value)}
               className="!bg-transparent !text-fg !text-lg placeholder:!text-fg-subtle !p-0"
             />
-          </div>
+          </motion.div>
 
           <div className="mt-3 flex flex-wrap gap-2">
-            {PROMPT_INSPIRATION.map((p) => (
-              <button
+            {PROMPT_INSPIRATION.map((p, i) => (
+              <motion.button
                 key={p}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.08, duration: 0.4 }}
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={() => setPrompt(p)}
                 className="text-xs px-3 py-1.5 rounded-full bg-surface-2 text-fg-muted hover:bg-surface-hover hover:text-fg transition"
               >
                 {p}
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -126,11 +141,16 @@ export function TripBuilderPage() {
               Step 2 · Trip type
             </label>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {TYPES.map((t) => {
+              {TYPES.map((t, i) => {
                 const isActive = tripType === t.value;
                 return (
-                  <button
+                  <motion.button
                     key={t.value}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.08, y: -4 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={() => setTripType(t.value)}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border font-medium transition ${
                       isActive
@@ -140,43 +160,55 @@ export function TripBuilderPage() {
                   >
                     <Icon icon={t.icon} className="text-2xl" />
                     <span className="text-sm">{t.value}</span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
           </div>
 
-          <Button
-            type="primary"
-            size="large"
-            block
-            loading={status === "loading"}
-            onClick={handleGenerate}
-            disabled={!prompt.trim()}
-            icon={<Icon icon="mdi:auto-fix" />}
-            className="!h-14 !mt-9 !text-base !font-semibold"
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            {status === "loading" ? "Generating..." : "Generate plan"}
-          </Button>
+            <Button
+              type="primary"
+              size="large"
+              block
+              loading={status === "loading"}
+              onClick={handleGenerate}
+              disabled={!prompt.trim()}
+              icon={<Icon icon="mdi:auto-fix" />}
+              className="!h-14 !mt-9 !text-base !font-semibold"
+            >
+              {status === "loading" ? "Generating..." : "Generate plan"}
+            </Button>
+          </motion.div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          initial={{ opacity: 0, y: 60, scale: 0.95, filter: "blur(8px)" }}
+          animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+          transition={{ delay: 0.25, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-5"
         >
           <div className="lg:sticky lg:top-28 rounded-3xl border border-line bg-surface surface-shadow overflow-hidden">
-            <div className="relative h-48">
-              <img
+            <div className="relative h-48 overflow-hidden">
+              <motion.img
                 src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=80"
                 alt="Live preview"
+                animate={status === "loading" ? { scale: [1, 1.05, 1] } : {}}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
-              <span className="absolute top-4 left-4 text-xs uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/30">
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, type: "spring" }}
+                className="absolute top-4 left-4 text-xs uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/30"
+              >
                 Live Preview
-              </span>
+              </motion.span>
             </div>
 
             <div className="p-6 -mt-12 relative">
@@ -184,9 +216,10 @@ export function TripBuilderPage() {
                 {status === "idle" && (
                   <motion.div
                     key="idle"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: -20, filter: "blur(6px)" }}
+                    transition={{ duration: 0.5 }}
                   >
                     <h3 className="text-2xl font-bold text-fg">
                       Awaiting your prompt
@@ -196,13 +229,16 @@ export function TripBuilderPage() {
                     </p>
                     <div className="mt-6 space-y-3">
                       {[1, 2, 3].map((n) => (
-                        <div
+                        <motion.div
                           key={n}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.3 + n * 0.1, duration: 0.5 }}
                           className="p-4 rounded-xl border border-dashed border-line"
                         >
                           <div className="h-3 w-16 bg-surface-2 rounded mb-2" />
                           <div className="h-4 w-3/4 bg-surface-2 rounded" />
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </motion.div>
@@ -211,24 +247,24 @@ export function TripBuilderPage() {
                 {status === "loading" && (
                   <motion.div
                     key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
                     className="text-center py-10"
                   >
-                    <div className="inline-flex items-center gap-2 mb-4">
+                    <div className="inline-flex items-center gap-3 mb-4">
                       {[0, 1, 2].map((i) => (
                         <motion.span
                           key={i}
-                          className="w-2 h-2 rounded-full bg-accent"
+                          className="w-3 h-3 rounded-full bg-accent"
                           animate={{
-                            scale: [1, 1.5, 1],
-                            opacity: [0.4, 1, 0.4],
+                            scale: [1, 1.8, 1],
+                            opacity: [0.3, 1, 0.3],
                           }}
                           transition={{
-                            duration: 1.2,
+                            duration: 1.4,
                             repeat: Infinity,
-                            delay: i * 0.2,
+                            delay: i * 0.25,
                           }}
                         />
                       ))}
@@ -236,10 +272,10 @@ export function TripBuilderPage() {
                     <AnimatePresence mode="wait">
                       <motion.p
                         key={msgIndex}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -6 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, y: -15, filter: "blur(4px)" }}
+                        transition={{ duration: 0.4 }}
                         className="text-fg-muted"
                       >
                         {LOADER_MESSAGES[msgIndex]}
@@ -251,8 +287,9 @@ export function TripBuilderPage() {
                 {status === "done" && trip && (
                   <motion.div
                     key="done"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 40, scale: 0.95, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                   >
                     <span className="text-xs uppercase tracking-[0.3em] text-accent font-semibold">
                       {trip.tripType} · {trip.days.length} days
@@ -268,9 +305,10 @@ export function TripBuilderPage() {
                       {trip.days.map((d, i) => (
                         <motion.div
                           key={d.day}
-                          initial={{ opacity: 0, x: 12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.08 + i * 0.06 }}
+                          initial={{ opacity: 0, x: 30, scale: 0.9 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          transition={{ delay: 0.15 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                          whileHover={{ x: 4, scale: 1.02 }}
                           className="flex gap-3 p-3 rounded-xl bg-surface-2 border border-line"
                         >
                           <div className="w-9 h-9 rounded-lg bg-accent/15 text-accent flex items-center justify-center text-xs font-bold shrink-0">
@@ -288,17 +326,22 @@ export function TripBuilderPage() {
                       ))}
                     </div>
 
-                    <Button
-                      type="primary"
-                      size="large"
-                      block
-                      onClick={() => navigate("/trip/current")}
-                      icon={<Icon icon="mdi:arrow-right" />}
-                      iconPosition="end"
-                      className="!h-12 !mt-6 !font-semibold"
+                    <motion.div
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                     >
-                      View full trip
-                    </Button>
+                      <Button
+                        type="primary"
+                        size="large"
+                        block
+                        onClick={() => navigate("/trip/current")}
+                        icon={<Icon icon="mdi:arrow-right" />}
+                        iconPosition="end"
+                        className="!h-12 !mt-6 !font-semibold"
+                      >
+                        View full trip
+                      </Button>
+                    </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
