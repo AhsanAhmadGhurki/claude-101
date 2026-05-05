@@ -1,16 +1,31 @@
-import { useWikipediaImage } from "../../hooks/useWikipediaImage";
+import { WikiImage } from "./WikiImage";
 
-export function DestinationImage({ destination, className, loading }) {
-  const src = useWikipediaImage(
-    destination.wikipedia || destination.name,
-    destination.img
-  );
+export function DestinationImage({
+  destination,
+  className,
+  imgClassName,
+  loading,
+}) {
+  const queries = [
+    destination.wikipedia,
+    destination.name,
+    destination.region,
+  ].filter(Boolean);
   return (
-    <img
-      src={src}
+    <WikiImage
+      place={destination.name}
+      city={destination.region}
+      queries={queries}
       alt={destination.name}
-      loading={loading}
+      label={destination.name}
+      category={destination.category ?? destination.tag}
+      categoryHint={{
+        type: destination.category,
+        tags: [destination.category, destination.tag].filter(Boolean),
+      }}
       className={className}
+      imgClassName={imgClassName}
+      loading={loading}
     />
   );
 }

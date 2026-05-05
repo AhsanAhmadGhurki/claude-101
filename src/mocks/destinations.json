@@ -1,0 +1,390 @@
+{
+  "hunza": {
+    "name": "Hunza Valley",
+    "region": "Gilgit-Baltistan, Pakistan",
+    "blurb": "Apricot orchards, Karakoram peaks, and ancient silk-road forts.",
+    "seasons": ["spring", "summer", "autumn"],
+    "tags": ["adventure", "nature", "culture", "mountains", "photography"],
+    "spots": [
+      { "name": "Baltit Fort", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Altit Fort & old village walk", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Eagle's Nest sunrise at Duikar", "type": "viewpoint", "duration": "3h", "tags": ["nature", "photography"], "timing": "morning" },
+      { "name": "Attabad Lake boat ride", "type": "activity", "duration": "2h", "tags": ["adventure", "nature"], "timing": "midday" },
+      { "name": "Drive through Passu Cones", "type": "scenic", "duration": "3h", "tags": ["nature", "road-trip"], "timing": "afternoon" },
+      { "name": "Hussaini suspension bridge crossing", "type": "activity", "duration": "1h", "tags": ["adventure", "thrill"], "timing": "midday" },
+      { "name": "Hopper Glacier viewpoint hike", "type": "hike", "duration": "5h", "tags": ["adventure", "nature"], "timing": "morning" },
+      { "name": "Khunjerab Pass border drive", "type": "scenic", "duration": "8h", "tags": ["road-trip", "nature"], "timing": "fullday" },
+      { "name": "Karimabad bazaar stroll", "type": "casual", "duration": "1h", "tags": ["culture", "food", "shopping"], "timing": "evening" }
+    ],
+    "food": [
+      { "name": "Hunzakut breakfast — apricot oil, walnut bread", "tier": "low" },
+      { "name": "Cafe de Hunza terrace coffee", "tier": "medium" },
+      { "name": "Glacier Breeze rooftop dinner", "tier": "medium" },
+      { "name": "Eagle's Nest fine dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Old Hunza Inn", "Hunza Embassy Hotel"],
+      "medium": ["Hunza Serena Inn", "Darbar Hotel"],
+      "luxury": ["Eagle's Nest Hotel", "Luxus Hunza"]
+    },
+    "packing": ["Layered warm clothing", "Sturdy hiking shoes", "High-UV sunscreen", "Power bank"],
+    "tips": [
+      "Carry cash — ATMs are unreliable in the valley",
+      "Acclimatize before going further north toward Khunjerab",
+      "Respect local customs and dress modestly"
+    ],
+    "dailyCost": { "low": 9000, "medium": 28000, "luxury": 80000 }
+  },
+  "skardu": {
+    "name": "Skardu",
+    "region": "Gilgit-Baltistan, Pakistan",
+    "blurb": "Cold deserts, alpine lakes, and gateway to the world's highest peaks.",
+    "seasons": ["summer", "autumn", "winter"],
+    "tags": ["adventure", "nature", "mountains", "photography"],
+    "spots": [
+      { "name": "Upper Kachura Lake walk", "type": "scenic", "duration": "2h", "tags": ["nature", "photography"], "timing": "morning" },
+      { "name": "Shangrila resort viewpoint", "type": "scenic", "duration": "1h", "tags": ["nature", "photography"], "timing": "afternoon" },
+      { "name": "Deosai Plains expedition", "type": "expedition", "duration": "10h", "tags": ["adventure", "nature"], "timing": "fullday" },
+      { "name": "Sheosar Lake camping", "type": "camp", "duration": "16h", "tags": ["adventure", "nature"], "timing": "overnight" },
+      { "name": "Kharpocho Fort climb", "type": "hike", "duration": "3h", "tags": ["culture", "adventure"], "timing": "afternoon" },
+      { "name": "Sarfaranga Cold Desert", "type": "activity", "duration": "3h", "tags": ["adventure", "photography"], "timing": "evening" },
+      { "name": "Manthoka Waterfall picnic", "type": "scenic", "duration": "4h", "tags": ["nature", "family"], "timing": "midday" },
+      { "name": "Satpara Lake sunrise", "type": "viewpoint", "duration": "2h", "tags": ["nature", "photography"], "timing": "morning" },
+      { "name": "Skardu old bazaar walk", "type": "casual", "duration": "1h", "tags": ["culture", "food"], "timing": "evening" }
+    ],
+    "food": [
+      { "name": "Balti chapshuro with butter tea", "tier": "low" },
+      { "name": "Mehfil restaurant trout fish", "tier": "medium" },
+      { "name": "Shangrila lakeside dinner", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Concordia Motel", "K2 Inn"],
+      "medium": ["Mashabrum Hotel", "Snowland Hotel"],
+      "luxury": ["Shangrila Resort", "Legend Hotel Skardu"]
+    },
+    "packing": ["Down jacket", "Trekking boots", "Polarized sunglasses", "First-aid kit", "Headlamp"],
+    "tips": [
+      "Roads can close suddenly — always have a buffer day",
+      "Deosai is only accessible May–October",
+      "Drink lots of water; altitude is no joke"
+    ],
+    "dailyCost": { "low": 10000, "medium": 30000, "luxury": 90000 }
+  },
+  "naran": {
+    "name": "Naran-Kaghan Valley",
+    "region": "Khyber Pakhtunkhwa, Pakistan",
+    "blurb": "Pine forests, glacial rivers, and the postcard-blue Saif-ul-Mulook lake.",
+    "seasons": ["summer", "autumn"],
+    "tags": ["road-trip", "nature", "family", "adventure"],
+    "spots": [
+      { "name": "Saif-ul-Mulook lake jeep ride", "type": "activity", "duration": "4h", "tags": ["nature", "adventure"], "timing": "morning" },
+      { "name": "Lulusar Lake stop", "type": "scenic", "duration": "1h", "tags": ["nature", "photography"], "timing": "midday" },
+      { "name": "Babusar Top viewpoint", "type": "viewpoint", "duration": "2h", "tags": ["nature", "road-trip"], "timing": "afternoon" },
+      { "name": "Shogran meadow trek", "type": "hike", "duration": "5h", "tags": ["adventure", "nature"], "timing": "morning" },
+      { "name": "Siri Paye plateau jeep tour", "type": "scenic", "duration": "4h", "tags": ["nature", "family"], "timing": "midday" },
+      { "name": "Kaghan riverside cafe stop", "type": "casual", "duration": "1h", "tags": ["food", "scenic"], "timing": "evening" },
+      { "name": "Trout fishing at the river", "type": "activity", "duration": "2h", "tags": ["family", "food"], "timing": "afternoon" }
+    ],
+    "food": [
+      { "name": "Roadside trout fry", "tier": "low" },
+      { "name": "PTDC Naran dinner", "tier": "medium" },
+      { "name": "Pine Park resort dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Lalazar Inn", "Park View Naran"],
+      "medium": ["PTDC Motel Naran", "Cabana Hotel"],
+      "luxury": ["Pine Park Hotel", "Arcadian Hotel"]
+    },
+    "packing": ["Warm fleece", "Rain shell", "Comfortable trail shoes", "Motion-sickness pills"],
+    "tips": [
+      "Babusar Pass closes after October — check before driving",
+      "Cell coverage is spotty past Kaghan",
+      "Carry small cash for jeep operators"
+    ],
+    "dailyCost": { "low": 7000, "medium": 22000, "luxury": 65000 }
+  },
+  "fairy-meadows": {
+    "name": "Fairy Meadows",
+    "region": "Gilgit-Baltistan, Pakistan",
+    "blurb": "Alpine grassland under the Nanga Parbat massif — accessible only by jeep + hike.",
+    "seasons": ["summer", "autumn"],
+    "tags": ["adventure", "nature", "trekking", "remote"],
+    "spots": [
+      { "name": "Jeep ride from Raikot bridge", "type": "activity", "duration": "2h", "tags": ["adventure", "thrill"], "timing": "morning" },
+      { "name": "Trek up to the meadows", "type": "hike", "duration": "4h", "tags": ["adventure", "nature"], "timing": "morning" },
+      { "name": "Nanga Parbat viewpoint sunrise", "type": "viewpoint", "duration": "3h", "tags": ["nature", "photography"], "timing": "morning" },
+      { "name": "Beyal camp day-hike", "type": "hike", "duration": "5h", "tags": ["adventure", "nature"], "timing": "midday" },
+      { "name": "Stargazing bonfire at camp", "type": "casual", "duration": "3h", "tags": ["nature", "photography"], "timing": "evening" },
+      { "name": "Fairy Point glacier-edge walk", "type": "hike", "duration": "6h", "tags": ["adventure", "nature"], "timing": "fullday" }
+    ],
+    "food": [
+      { "name": "Camp daal-chawal", "tier": "low" },
+      { "name": "Wood-fired tandoor dinner", "tier": "medium" }
+    ],
+    "stay": {
+      "low": ["Raikot Sarai shared cabin", "Camping tent"],
+      "medium": ["Fairy Meadows Cottage", "Nanga Parbat Cottages"],
+      "luxury": ["Private wooden cottage with view"]
+    },
+    "packing": ["4-season sleeping bag", "Trekking poles", "Layered thermals", "Headlamp", "Cash only — no card readers"],
+    "tips": [
+      "No road access — last leg is a 4hr trek or pony ride",
+      "Pack light; you'll be carrying everything up",
+      "Phone signal is non-existent — tell people in advance"
+    ],
+    "dailyCost": { "low": 12000, "medium": 32000, "luxury": 75000 }
+  },
+  "swat": {
+    "name": "Swat Valley",
+    "region": "Khyber Pakhtunkhwa, Pakistan",
+    "blurb": "Green valleys, Buddhist heritage, and ski-friendly slopes at Malam Jabba.",
+    "seasons": ["spring", "summer", "autumn", "winter"],
+    "tags": ["culture", "nature", "family", "ski"],
+    "spots": [
+      { "name": "Malam Jabba ski resort", "type": "activity", "duration": "5h", "tags": ["adventure", "family"], "timing": "midday" },
+      { "name": "Mahodand Lake jeep tour", "type": "scenic", "duration": "6h", "tags": ["nature", "family"], "timing": "fullday" },
+      { "name": "Mingora bazaar food walk", "type": "casual", "duration": "2h", "tags": ["food", "culture"], "timing": "evening" },
+      { "name": "White Palace of Marghazar", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Kalam riverside walk", "type": "scenic", "duration": "1h", "tags": ["nature", "family"], "timing": "evening" },
+      { "name": "Ushu Forest hike", "type": "hike", "duration": "3h", "tags": ["nature", "adventure"], "timing": "morning" }
+    ],
+    "food": [
+      { "name": "Chapli kebab stalls", "tier": "low" },
+      { "name": "Kalam riverside trout dinner", "tier": "medium" },
+      { "name": "Malam Jabba PC Hotel dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Hotel Pameer", "Heaven Breeze Inn"],
+      "medium": ["Rock City Resort", "Swat Continental"],
+      "luxury": ["PC Hotel Malam Jabba", "Serena Swat"]
+    },
+    "packing": ["Rain shell", "Warm layers (winter)", "Comfortable walking shoes"],
+    "tips": [
+      "Winter brings snow — chains may be required for the Malam Jabba road",
+      "Try the local desi ghee chapli kebab",
+      "Mahodand jeep operators charge per group, not per head"
+    ],
+    "dailyCost": { "low": 7000, "medium": 22000, "luxury": 60000 }
+  },
+  "chitral": {
+    "name": "Chitral & Kalash Valleys",
+    "region": "Khyber Pakhtunkhwa, Pakistan",
+    "blurb": "Hindu Kush peaks, the polo capital of Shandur, and the unique Kalasha culture.",
+    "seasons": ["summer", "autumn"],
+    "tags": ["culture", "nature", "remote", "festival"],
+    "spots": [
+      { "name": "Kalash valley village walk", "type": "culture", "duration": "4h", "tags": ["culture", "anthropology"], "timing": "midday" },
+      { "name": "Bumburet stream picnic", "type": "casual", "duration": "2h", "tags": ["nature", "family"], "timing": "afternoon" },
+      { "name": "Shandur Pass drive", "type": "scenic", "duration": "8h", "tags": ["road-trip", "nature"], "timing": "fullday" },
+      { "name": "Chitral Fort & mosque tour", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Kalash museum visit", "type": "culture", "duration": "1h", "tags": ["culture", "history"], "timing": "midday" },
+      { "name": "Birir valley hike", "type": "hike", "duration": "4h", "tags": ["nature", "culture"], "timing": "morning" }
+    ],
+    "food": [
+      { "name": "Kalash cheese & walnut bread", "tier": "low" },
+      { "name": "Trout dinner by the river", "tier": "medium" },
+      { "name": "Hindukush Heights restaurant", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Kalash Continental", "PTDC Chitral"],
+      "medium": ["Hindukush Heights", "Mountain Inn Chitral"],
+      "luxury": ["Hindukush Heights premium suite"]
+    },
+    "packing": ["Modest clothing for villages", "Hiking shoes", "Camera", "Cash"],
+    "tips": [
+      "Always ask before photographing Kalasha women",
+      "Respect during festivals (Chilam Joshi, Uchal, Chowas)",
+      "Roads from Chitral to Kalash are rough — 4x4 recommended"
+    ],
+    "dailyCost": { "low": 9000, "medium": 28000, "luxury": 78000 }
+  },
+  "lahore": {
+    "name": "Lahore",
+    "region": "Punjab, Pakistan",
+    "blurb": "Mughal forts, food street feasts, and the unmatched zinda-dilan culture.",
+    "seasons": ["spring", "autumn", "winter"],
+    "tags": ["culture", "food", "history", "city", "shopping"],
+    "spots": [
+      { "name": "Lahore Fort (Shahi Qila)", "type": "culture", "duration": "3h", "tags": ["culture", "history"], "timing": "morning" },
+      { "name": "Badshahi Mosque", "type": "culture", "duration": "1.5h", "tags": ["culture", "history"], "timing": "morning" },
+      { "name": "Walled City heritage walk", "type": "culture", "duration": "3h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Wazir Khan Mosque", "type": "culture", "duration": "1h", "tags": ["culture", "history"], "timing": "midday" },
+      { "name": "Food Street (Fort Road) dinner", "type": "casual", "duration": "2h", "tags": ["food", "culture"], "timing": "evening" },
+      { "name": "Anarkali Bazaar shopping", "type": "casual", "duration": "2h", "tags": ["shopping", "food"], "timing": "evening" },
+      { "name": "Shalimar Gardens", "type": "scenic", "duration": "2h", "tags": ["nature", "history"], "timing": "afternoon" },
+      { "name": "Minar-e-Pakistan & Iqbal Park", "type": "culture", "duration": "1.5h", "tags": ["history", "family"], "timing": "afternoon" },
+      { "name": "Wagah Border flag-lowering ceremony", "type": "experience", "duration": "3h", "tags": ["culture", "experience"], "timing": "evening" },
+      { "name": "Liberty Market & MM Alam Road", "type": "casual", "duration": "2h", "tags": ["shopping", "food"], "timing": "evening" },
+      { "name": "Lahore Museum", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "midday" },
+      { "name": "Cooco's Den rooftop dinner", "type": "casual", "duration": "2h", "tags": ["food", "culture"], "timing": "evening" }
+    ],
+    "food": [
+      { "name": "Phajja siri-paye breakfast at Lakshmi Chowk", "tier": "low" },
+      { "name": "Butt Karahi at Lakshmi Chowk", "tier": "low" },
+      { "name": "Andaaz courtyard dinner", "tier": "medium" },
+      { "name": "Cooco's Den rooftop", "tier": "medium" },
+      { "name": "Haveli Restaurant Food Street", "tier": "medium" },
+      { "name": "Yum Chinese & Thai", "tier": "luxury" },
+      { "name": "Polo Lounge at Pearl Continental", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Hotel One Liberty", "Royal Palm Inn"],
+      "medium": ["Avari Hotel Lahore", "Faletti's Hotel"],
+      "luxury": ["Pearl Continental Lahore", "Nishat Hotel"]
+    },
+    "packing": ["Light cotton clothing", "Walking shoes", "Scarf for mosque visits"],
+    "tips": [
+      "Walk the Walled City early to beat the heat",
+      "Carry change for rickshaws — meter rates are unreliable",
+      "Friday afternoons are quieter at the Fort and Badshahi Mosque"
+    ],
+    "dailyCost": { "low": 6000, "medium": 18000, "luxury": 55000 }
+  },
+  "karachi": {
+    "name": "Karachi",
+    "region": "Sindh, Pakistan",
+    "blurb": "Sea breezes, biryani, and Pakistan's largest cosmopolitan hub.",
+    "seasons": ["winter", "spring", "autumn"],
+    "tags": ["food", "city", "culture", "beach", "shopping"],
+    "spots": [
+      { "name": "Clifton Beach evening walk", "type": "scenic", "duration": "2h", "tags": ["beach", "family"], "timing": "evening" },
+      { "name": "Mohatta Palace Museum", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Frere Hall & gardens", "type": "culture", "duration": "1h", "tags": ["culture", "history"], "timing": "morning" },
+      { "name": "Empress Market bazaar", "type": "casual", "duration": "1.5h", "tags": ["food", "shopping"], "timing": "midday" },
+      { "name": "Quaid-e-Azam Mausoleum", "type": "culture", "duration": "1h", "tags": ["culture", "history"], "timing": "morning" },
+      { "name": "Port Grand boardwalk", "type": "casual", "duration": "2h", "tags": ["food", "family"], "timing": "evening" },
+      { "name": "Do Darya seafront dining strip", "type": "casual", "duration": "2h", "tags": ["food", "scenic"], "timing": "evening" },
+      { "name": "Sea View at Clifton sunset", "type": "viewpoint", "duration": "1h", "tags": ["scenic", "family"], "timing": "evening" },
+      { "name": "Boat Basin food trail", "type": "casual", "duration": "2h", "tags": ["food"], "timing": "evening" },
+      { "name": "Pakistan Maritime Museum", "type": "culture", "duration": "2h", "tags": ["culture", "family"], "timing": "afternoon" },
+      { "name": "Manora Island day trip", "type": "scenic", "duration": "5h", "tags": ["beach", "adventure"], "timing": "fullday" }
+    ],
+    "food": [
+      { "name": "Burns Road nihari breakfast", "tier": "low" },
+      { "name": "Student Biryani lunch", "tier": "low" },
+      { "name": "Kolachi seafront dinner", "tier": "medium" },
+      { "name": "BBQ Tonight Boat Basin", "tier": "medium" },
+      { "name": "Okra fine dining", "tier": "luxury" },
+      { "name": "Sakura at Pearl Continental", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Regent Plaza", "Hotel Crown Inn"],
+      "medium": ["Avari Towers", "Marriott Karachi"],
+      "luxury": ["Pearl Continental Karachi", "Mövenpick Hotel"]
+    },
+    "packing": ["Light cotton clothing", "Sunglasses", "Comfortable walking shoes"],
+    "tips": [
+      "Karachi traffic is brutal during peak hours — plan around it",
+      "Burns Road and Boat Basin are can't-miss food trails",
+      "Beach swimming isn't recommended — currents are strong"
+    ],
+    "dailyCost": { "low": 6000, "medium": 18000, "luxury": 55000 }
+  },
+  "islamabad": {
+    "name": "Islamabad",
+    "region": "Capital Territory, Pakistan",
+    "blurb": "Margalla foothills, modernist boulevards, and Pakistan's most planned city.",
+    "seasons": ["spring", "autumn", "winter"],
+    "tags": ["nature", "city", "culture", "family", "food"],
+    "spots": [
+      { "name": "Faisal Mosque", "type": "culture", "duration": "1.5h", "tags": ["culture"], "timing": "morning" },
+      { "name": "Daman-e-Koh viewpoint", "type": "viewpoint", "duration": "1h", "tags": ["nature", "scenic"], "timing": "afternoon" },
+      { "name": "Pir Sohawa & Monal restaurant", "type": "scenic", "duration": "3h", "tags": ["food", "scenic"], "timing": "evening" },
+      { "name": "Lok Virsa Heritage Museum", "type": "culture", "duration": "2h", "tags": ["culture", "family"], "timing": "afternoon" },
+      { "name": "Saidpur Village", "type": "culture", "duration": "2h", "tags": ["culture", "food"], "timing": "evening" },
+      { "name": "Margalla Hills Trail 5 hike", "type": "hike", "duration": "3h", "tags": ["adventure", "nature"], "timing": "morning" },
+      { "name": "Pakistan Monument & museum", "type": "culture", "duration": "2h", "tags": ["culture", "family"], "timing": "afternoon" },
+      { "name": "Centaurus Mall", "type": "casual", "duration": "2h", "tags": ["shopping", "food"], "timing": "evening" },
+      { "name": "F-6 / F-7 cafe district stroll", "type": "casual", "duration": "2h", "tags": ["food", "shopping"], "timing": "evening" },
+      { "name": "Rawal Lake viewpoint", "type": "scenic", "duration": "1h", "tags": ["nature", "family"], "timing": "afternoon" }
+    ],
+    "food": [
+      { "name": "Savour Foods chicken pulao", "tier": "low" },
+      { "name": "Kabul Restaurant Afghan platter", "tier": "low" },
+      { "name": "Monal hilltop dinner", "tier": "medium" },
+      { "name": "Des Pardes village dinner", "tier": "medium" },
+      { "name": "Tuscany Courtyard fine dining", "tier": "luxury" },
+      { "name": "Serena Hotel dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Hotel One F-7", "Best Western Islamabad"],
+      "medium": ["Hill View Hotel", "Ramada Islamabad"],
+      "luxury": ["Serena Hotel Islamabad", "Marriott Islamabad"]
+    },
+    "packing": ["Layered clothing for cool evenings", "Walking shoes for trails"],
+    "tips": [
+      "Trail 5 to Monal gets crowded on weekends — go early",
+      "F-6/F-7 has the best cafes for working remotely",
+      "Use Careem or InDrive — local taxis are unreliable"
+    ],
+    "dailyCost": { "low": 6500, "medium": 19000, "luxury": 60000 }
+  },
+  "multan": {
+    "name": "Multan",
+    "region": "Punjab, Pakistan",
+    "blurb": "City of saints — Sufi shrines, blue tile work, and the country's best mangoes.",
+    "seasons": ["winter", "spring", "autumn"],
+    "tags": ["culture", "history", "food", "spiritual"],
+    "spots": [
+      { "name": "Tomb of Shah Rukn-e-Alam", "type": "culture", "duration": "1.5h", "tags": ["culture", "spiritual"], "timing": "morning" },
+      { "name": "Tomb of Bahauddin Zakariya", "type": "culture", "duration": "1h", "tags": ["culture", "spiritual"], "timing": "morning" },
+      { "name": "Multan Fort (Qasim Bagh)", "type": "culture", "duration": "2h", "tags": ["history", "scenic"], "timing": "afternoon" },
+      { "name": "Hussain Agahi Bazaar", "type": "casual", "duration": "1.5h", "tags": ["shopping", "food"], "timing": "evening" },
+      { "name": "Ghanta Ghar (Clock Tower) area", "type": "scenic", "duration": "1h", "tags": ["history"], "timing": "evening" },
+      { "name": "Multan Arts Council", "type": "culture", "duration": "1h", "tags": ["culture"], "timing": "afternoon" },
+      { "name": "Wali Muhammad Mosque", "type": "culture", "duration": "1h", "tags": ["culture", "spiritual"], "timing": "morning" }
+    ],
+    "food": [
+      { "name": "Multani sohan halwa tasting", "tier": "low" },
+      { "name": "Bohar Gate beef pulao", "tier": "low" },
+      { "name": "Saleem's Restaurant fish tikka", "tier": "medium" },
+      { "name": "Multan Cantt golf club dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Hotel Sindbad", "Hotel Shezan"],
+      "medium": ["Avari Xpress Multan", "Ramada Multan"],
+      "luxury": ["Ramada Multan deluxe", "Pearl Continental Multan"]
+    },
+    "packing": ["Light cotton clothing", "Hat for sun", "Modest dress for shrines"],
+    "tips": [
+      "Summer is brutal (45°C+) — visit October to March",
+      "Many shrines close briefly during prayer times",
+      "Try mango varieties in season (May–August)"
+    ],
+    "dailyCost": { "low": 5500, "medium": 15000, "luxury": 45000 }
+  },
+  "peshawar": {
+    "name": "Peshawar",
+    "region": "Khyber Pakhtunkhwa, Pakistan",
+    "blurb": "Ancient frontier city — Mughal forts, Pashtun bazaars, and legendary chapli kebabs.",
+    "seasons": ["spring", "autumn", "winter"],
+    "tags": ["culture", "history", "food", "city"],
+    "spots": [
+      { "name": "Bala Hisar Fort exterior view", "type": "culture", "duration": "1h", "tags": ["history"], "timing": "morning" },
+      { "name": "Qissa Khwani Bazaar walk", "type": "casual", "duration": "2h", "tags": ["culture", "food"], "timing": "afternoon" },
+      { "name": "Sethi House (Sethi Mohallah)", "type": "culture", "duration": "1.5h", "tags": ["culture", "history"], "timing": "midday" },
+      { "name": "Peshawar Museum", "type": "culture", "duration": "2h", "tags": ["culture", "history"], "timing": "afternoon" },
+      { "name": "Mahabat Khan Mosque", "type": "culture", "duration": "1h", "tags": ["culture"], "timing": "morning" },
+      { "name": "Khyber Pass viewpoint (with permit)", "type": "scenic", "duration": "4h", "tags": ["history", "scenic"], "timing": "fullday" },
+      { "name": "Namak Mandi food trail", "type": "casual", "duration": "2h", "tags": ["food"], "timing": "evening" }
+    ],
+    "food": [
+      { "name": "Charsi Tikka at Namak Mandi", "tier": "low" },
+      { "name": "Kabul Restaurant chapli kebabs", "tier": "low" },
+      { "name": "Shiraz Restaurant grills", "tier": "medium" },
+      { "name": "Pearl Continental Peshawar dining", "tier": "luxury" }
+    ],
+    "stay": {
+      "low": ["Hotel Greens", "Crown Plaza Peshawar"],
+      "medium": ["Shelton's Rezidor", "Park Hyatt Peshawar"],
+      "luxury": ["Pearl Continental Peshawar", "Serena Peshawar"]
+    },
+    "packing": ["Modest clothing", "Walking shoes", "Camera"],
+    "tips": [
+      "Khyber Pass requires a permit — arrange ahead via the Tourism Corporation",
+      "Namak Mandi is a 7pm-onwards food haven",
+      "Be respectful with photography in older bazaars"
+    ],
+    "dailyCost": { "low": 5500, "medium": 16000, "luxury": 50000 }
+  }
+}

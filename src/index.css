@@ -60,6 +60,8 @@
   #root {
     background-color: rgb(var(--bg));
     color: rgb(var(--fg));
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   body {

@@ -11,22 +11,38 @@ export function ExplorePage() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
+  const visibleCategories = useMemo(
+    () =>
+      CATEGORIES.filter(
+        (cat) =>
+          cat.value === "all" ||
+          DESTINATIONS.some((d) => d.category === cat.value)
+      ),
+    []
+  );
+
   const items = useMemo(() => {
+    const q = query.trim().toLowerCase();
     let list =
-      active === "all"
-        ? DESTINATIONS
-        : DESTINATIONS.filter((d) => d.category === active);
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (d) =>
-          d.name.toLowerCase().includes(q) ||
-          d.region.toLowerCase().includes(q) ||
-          d.tag.toLowerCase().includes(q)
-      );
+      !q && active !== "all"
+        ? DESTINATIONS.filter((d) => d.category === active)
+        : DESTINATIONS;
+    if (q) {
+      list = list.filter((d) => {
+        const haystack = [d.name, d.region, d.tag, d.category, d.short]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      });
     }
     return list;
   }, [active, query]);
+
+  const handleQueryChange = (value) => {
+    setQuery(value);
+    if (value.trim() && active !== "all") setActive("all");
+  };
 
   const featured = items[0];
   const rest = items.slice(1);
@@ -68,7 +84,7 @@ export function ExplorePage() {
               size="large"
               placeholder="Search destinations, regions, vibes..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleQueryChange(e.target.value)}
               prefix={
                 <Icon
                   icon="mdi:magnify"
@@ -78,8 +94,9 @@ export function ExplorePage() {
               className="!h-14 !rounded-2xl"
             />
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((cat, i) => {
+              {visibleCategories.map((cat, i) => {
                 const isActive = active === cat.value;
+                const showDismiss = isActive && cat.value !== "all";
                 return (
                   <motion.button
                     key={cat.value}
@@ -96,6 +113,19 @@ export function ExplorePage() {
                     }`}
                   >
                     <Icon icon={cat.icon} /> {cat.label}
+                    {showDismiss && (
+                      <span
+                        role="button"
+                        aria-label={`Clear ${cat.label} filter`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActive("all");
+                        }}
+                        className="-mr-1 ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-accent-fg/20 transition"
+                      >
+                        <Icon icon="mdi:close" className="text-xs" />
+                      </span>
+                    )}
                   </motion.button>
                 );
               })}
@@ -116,9 +146,10 @@ export function ExplorePage() {
           >
             <DestinationImage
               destination={featured}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/15 transition-colors duration-500 pointer-events-none" />
             <span className="absolute top-6 left-6 text-xs uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/30">
               {featured.tag}
             </span>
@@ -167,18 +198,24 @@ export function ExplorePage() {
                   <DestinationImage
                     destination={d}
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                  <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/15 transition-colors duration-500 pointer-events-none" />
                   <span className="absolute top-4 left-4 text-[10px] uppercase tracking-widest px-2 py-1 rounded-full bg-white/15 backdrop-blur border border-white/30 text-white">
                     {d.tag}
                   </span>
+                  <div className="absolute top-4 right-4 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-400 ease-out pointer-events-none">
+                    <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white text-fg text-[11px] font-semibold shadow-lg">
+                      Plan trip <Icon icon="mdi:arrow-right" />
+                    </div>
+                  </div>
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <span className="text-[10px] uppercase tracking-widest text-white/75">
                       {d.region}
                     </span>
-                    <h3 className="text-2xl font-bold mt-0.5">{d.name}</h3>
-                    <p className="text-sm text-white/80 mt-1 line-clamp-2">
+                    <h3 className="text-2xl font-bold mt-0.5 group-hover:text-accent transition-colors">{d.name}</h3>
+                    <p className="text-sm text-white/80 mt-1 line-clamp-2 group-hover:text-white transition-colors">
                       {d.short}
                     </p>
                   </div>
@@ -204,7 +241,12 @@ export function ExplorePage() {
                 className="text-6xl mx-auto mb-4 text-fg-subtle"
               />
             </motion.div>
-            <p className="text-lg text-fg-muted">Nothing matches that yet.</p>
+            <p className="text-lg text-fg font-semibold">No destinations found</p>
+            <p className="text-sm text-fg-muted mt-1">
+              {query.trim()
+                ? `Nothing matches "${query.trim()}" in this category.`
+                : "Try a different category."}
+            </p>
             <button
               onClick={() => {
                 setActive("all");

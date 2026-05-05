@@ -3,17 +3,39 @@ import { useNavigate } from "react-router-dom";
 import { Button, message } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { WikiImage } from "../../components/ui/WikiImage";
+import { toWikiQuery } from "../../lib/utils/toWikiQuery";
 
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=80";
+function pickDayQueries(day, destination) {
+  const queries = [];
+  for (const name of day.activities ?? []) {
+    const q = toWikiQuery(name);
+    if (q && !queries.includes(q)) queries.push(q);
+  }
+  if (destination) {
+    const city = destination.split(",")[0].trim();
+    if (city && !queries.includes(city)) queries.push(city);
+    if (destination !== city && !queries.includes(destination)) queries.push(destination);
+  }
+  return queries;
+}
 
-const DAY_IMGS = [
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=1200&q=80",
-];
+function pickDayPlace(day) {
+  for (const name of day.activities ?? []) {
+    const q = toWikiQuery(name);
+    if (q) return q;
+  }
+  return day.title || null;
+}
+
+function pickCity(destination) {
+  if (!destination) return null;
+  return destination.split(",")[0].trim() || null;
+}
+
+function pickDayLabel(day) {
+  return day.title || day.activities?.[0] || "";
+}
 
 function readStoredTrip() {
   const stored = sessionStorage.getItem("lastTrip");
@@ -29,6 +51,7 @@ export function TripDetailsPage() {
   const navigate = useNavigate();
   const [trip] = useState(readStoredTrip);
   const [activeDay, setActiveDay] = useState(1);
+  const [saved, setSaved] = useState(false);
   const heroRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -45,22 +68,25 @@ export function TripDetailsPage() {
   }, [trip, navigate]);
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/builder?prompt=${encodeURIComponent(
-      trip?.prompt ?? ""
-    )}`;
     try {
-      await navigator.clipboard.writeText(url);
-      message.success("Trip link copied to clipboard");
+      await navigator.clipboard.writeText(window.location.href);
+      message.success({ content: "Link copied to clipboard!", duration: 2 });
     } catch {
       message.error("Could not copy link");
     }
   };
 
   const handleSave = () => {
-    const saved = JSON.parse(localStorage.getItem("savedTrips") || "[]");
-    saved.unshift(trip);
-    localStorage.setItem("savedTrips", JSON.stringify(saved.slice(0, 20)));
-    message.success("Trip saved");
+    const stored = JSON.parse(localStorage.getItem("savedTrips") || "[]");
+    stored.unshift(trip);
+    localStorage.setItem("savedTrips", JSON.stringify(stored.slice(0, 20)));
+    setSaved(true);
+    message.success({ content: "Trip saved!", duration: 2 });
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleEdit = () => {
+    navigate(`/builder?prompt=${encodeURIComponent(trip?.prompt ?? "")}`);
   };
 
   const scrollToDay = (day) => {
@@ -74,29 +100,51 @@ export function TripDetailsPage() {
 
   return (
     <div>
-      <section ref={heroRef} className="relative h-[68vh] min-h-[480px] w-full overflow-hidden">
+      <section ref={heroRef} className="relative h-[68vh] min-h-[560px] sm:min-h-[480px] w-full overflow-hidden">
         <motion.div
-          style={{
-            backgroundImage: `url(${HERO_IMG})`,
-            y: heroImgY,
-            scale: heroImgScale,
-          }}
-          className="absolute inset-0 bg-cover bg-center will-change-transform"
-        />
+          style={{ y: heroImgY, scale: heroImgScale }}
+          className="absolute inset-0 will-change-transform"
+        >
+          <WikiImage
+            place={pickCity(trip.destination)}
+            city={trip.region}
+            queries={[
+              trip.destination,
+              pickCity(trip.destination),
+              trip.region,
+            ].filter(Boolean)}
+            alt={trip.destination}
+            label={trip.destination}
+            category={trip.tripType?.toLowerCase()}
+            width={1600}
+            sizes="100vw"
+            fetchPriority="high"
+            loading="eager"
+            className="absolute inset-0 w-full h-full"
+            imgClassName="absolute inset-0 w-full h-full object-cover"
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-bg" />
 
         <motion.div
           style={{ y: heroContentY, opacity: heroContentOpacity }}
-          className="relative z-10 h-full flex flex-col justify-end px-6 pb-20 max-w-7xl mx-auto"
+          className="relative z-10 h-full flex flex-col justify-end px-6 pt-28 sm:pt-32 pb-12 sm:pb-20 max-w-7xl mx-auto"
         >
-          <motion.span
+          <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="text-xs font-bold uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur self-start px-3 py-1.5 rounded-full border border-white/30"
+            className="self-start flex flex-wrap gap-2"
           >
-            {trip.tripType} · {trip.days.length}-Day Itinerary
-          </motion.span>
+            <span className="text-xs font-bold uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur px-3 py-1.5 rounded-full border border-white/30">
+              {trip.tripType} · {trip.days.length}-Day Itinerary
+            </span>
+            {trip.budget && (
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-white bg-accent/30 backdrop-blur px-3 py-1.5 rounded-full border border-accent/50">
+                {trip.budget.tier} · Rs {Math.round(trip.budget.total ?? trip.budget.totalUSD ?? 0).toLocaleString("en-PK")}
+              </span>
+            )}
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 80, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -121,8 +169,13 @@ export function TripDetailsPage() {
             className="mt-8 flex flex-wrap gap-2"
           >
             {[
-              { fn: handleSave, icon: "mdi:bookmark-outline", label: "Save" },
+              {
+                fn: handleSave,
+                icon: saved ? "mdi:bookmark" : "mdi:bookmark-outline",
+                label: saved ? "Saved" : "Save",
+              },
               { fn: handleShare, icon: "mdi:share-outline", label: "Share" },
+              { fn: handleEdit, icon: "mdi:pencil-outline", label: "Edit" },
               { fn: () => window.print(), icon: "mdi:printer-outline", label: "Print" },
             ].map((btn, i) => (
               <motion.div
@@ -181,7 +234,7 @@ export function TripDetailsPage() {
                   {trip.days.length} days
                 </h2>
               </div>
-              <nav className="flex lg:flex-col gap-2 overflow-x-auto">
+              <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {trip.days.map((d, i) => (
                   <motion.button
                     key={d.day}
@@ -233,10 +286,17 @@ export function TripDetailsPage() {
                     transition={{ duration: 0.3 }}
                     className="relative rounded-3xl overflow-hidden h-72 md:h-auto border border-line surface-shadow"
                   >
-                    <img
-                      src={DAY_IMGS[i % DAY_IMGS.length]}
+                    <WikiImage
+                      place={pickDayPlace(d)}
+                      city={pickCity(trip.destination)}
+                      queries={pickDayQueries(d, trip.destination)}
                       alt={d.title}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      label={pickDayLabel(d)}
+                      category={trip.tripType?.toLowerCase()}
+                      width={1000}
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className="absolute inset-0 w-full h-full"
+                      imgClassName="absolute inset-0 w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <motion.div
@@ -261,23 +321,43 @@ export function TripDetailsPage() {
                     <h2 className="mt-2 text-3xl sm:text-4xl font-bold text-fg tracking-tight">
                       {d.title}
                     </h2>
+                    {d.stay && (
+                      <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-fg-muted">
+                        <Icon icon="mdi:bed-outline" className="text-accent" />
+                        <span>Stay · {d.stay}</span>
+                      </div>
+                    )}
                     <ul className="mt-6 space-y-3.5">
-                      {d.activities.map((a, k) => (
-                        <motion.li
-                          key={k}
-                          initial={{ opacity: 0, x: 20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.1 + k * 0.08, duration: 0.5 }}
-                          className="flex gap-3 items-start text-fg/90 leading-relaxed"
-                        >
-                          <Icon
-                            icon="mdi:checkbox-marked-circle-outline"
-                            className="text-accent text-xl mt-0.5 shrink-0"
-                          />
-                          <span>{a}</span>
-                        </motion.li>
-                      ))}
+                      {(d.timeline ?? d.activities.map((a) => ({ time: "", label: a }))).map(
+                        (t, k) => (
+                          <motion.li
+                            key={k}
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 + k * 0.08, duration: 0.5 }}
+                            className="flex gap-3 items-start text-fg/90 leading-relaxed"
+                          >
+                            <Icon
+                              icon={
+                                t.type === "meal"
+                                  ? "mdi:silverware-fork-knife"
+                                  : "mdi:checkbox-marked-circle-outline"
+                              }
+                              className="text-accent text-xl mt-0.5 shrink-0"
+                            />
+                            <div className="flex-1">
+                              {t.time && (
+                                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-fg-subtle">
+                                  {t.time}
+                                  {t.duration ? ` · ${t.duration}` : ""}
+                                </div>
+                              )}
+                              <span>{t.label}</span>
+                            </div>
+                          </motion.li>
+                        )
+                      )}
                     </ul>
                   </motion.div>
                 </motion.section>
