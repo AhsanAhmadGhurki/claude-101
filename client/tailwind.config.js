@@ -1,3 +1,8 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('tailwindcss').Config} */
 const withOpacity = (variable) => ({ opacityValue }) =>
   opacityValue !== undefined
@@ -6,7 +11,10 @@ const withOpacity = (variable) => ({ opacityValue }) =>
 
 export default {
   darkMode: "class",
-  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    path.join(__dirname, "index.html"),
+    path.join(__dirname, "src/**/*.{js,jsx,ts,tsx}"),
+  ],
   theme: {
     extend: {
       screens: {
