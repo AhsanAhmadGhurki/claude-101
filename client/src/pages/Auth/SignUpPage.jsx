@@ -38,6 +38,10 @@ export function SignUpPage() {
             errors: [message],
           }))
         );
+        // Also surface a top-of-form banner — inline field errors alone are
+        // easy to miss (they sit far below the button), and the original
+        // server message often reads better than the per-field text.
+        setTopError(err.message || "Please fix the highlighted fields.");
       } else {
         setTopError(err.message || "Something went wrong. Try again.");
       }
