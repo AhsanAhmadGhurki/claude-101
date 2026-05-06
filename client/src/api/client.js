@@ -102,13 +102,9 @@ async function request(path, opts = {}) {
 }
 
 export const api = {
-  // Auth — signin is now a two-step flow:
-  //   1. signin(creds) -> { pendingOtp: true, email, devOtp? }   (no cookies yet)
-  //   2. verifyLoginOtp({ email, code }) -> { user }              (cookies set)
+  // Auth
   signup: (payload) => request("/auth/signup", { method: "POST", body: payload }),
   signin: (payload) => request("/auth/signin", { method: "POST", body: payload }),
-  verifyLoginOtp: (payload) =>
-    request("/auth/verify-login-otp", { method: "POST", body: payload }),
   signout: () => request("/auth/signout", { method: "POST" }),
   refresh: () => request("/auth/refresh", { method: "POST" }),
 

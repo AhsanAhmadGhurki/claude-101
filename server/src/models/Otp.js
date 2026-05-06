@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 // brute-force the 1-in-1,000,000 space. The TTL index auto-deletes rows
 // shortly after expiresAt so the collection doesn't grow unbounded.
 
-const PURPOSES = ["email_verification", "password_reset", "login_verification"];
+const PURPOSES = ["email_verification", "password_reset"];
 
 const otpSchema = new mongoose.Schema(
   {
@@ -40,7 +40,6 @@ otpSchema.index({ user: 1, purpose: 1, createdAt: -1 });
 export const OTP_PURPOSES = Object.freeze({
   EMAIL_VERIFICATION: "email_verification",
   PASSWORD_RESET: "password_reset",
-  LOGIN_VERIFICATION: "login_verification",
 });
 
 export const Otp = mongoose.model("Otp", otpSchema);

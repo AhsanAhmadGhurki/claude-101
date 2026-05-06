@@ -3,7 +3,6 @@ import rateLimit from "express-rate-limit";
 import {
   signup,
   signin,
-  verifyLogin,
   refresh,
   signout,
   verifyEmail,
@@ -52,7 +51,6 @@ const perEmailLimiter = rateLimit({
 
 router.post("/signup", credentialLimiter, perEmailLimiter, signup);
 router.post("/signin", credentialLimiter, signin);
-router.post("/verify-login-otp", credentialLimiter, verifyLogin);
 router.post("/refresh", credentialLimiter, refresh);
 router.post("/signout", signout);
 

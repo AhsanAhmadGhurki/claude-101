@@ -57,9 +57,6 @@ export async function createUser({ name, email, password }) {
   return { user, emailResult };
 }
 
-// Verifies email + password (and email-verified gate). Does NOT issue a
-// session — the controller decides what comes next (OTP step in the
-// standard signin flow, direct session in flows that bypass OTP).
 export async function authenticate({ email, password }) {
   if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
@@ -83,33 +80,6 @@ export async function authenticate({ email, password }) {
     });
   }
 
-  return user;
-}
-
-// Issue a login-verification OTP for an authenticated-but-not-yet-sessioned
-// user. Called from the signin controller after creds check out. Returns the
-// emailResult so the controller can surface devOtp in non-prod responses.
-export async function startLoginOtp(user) {
-  const { code } = await issueOtp({
-    user,
-    purpose: OTP_PURPOSES.LOGIN_VERIFICATION,
-  });
-  return sendOtpEmail(user, code, OTP_PURPOSES.LOGIN_VERIFICATION);
-}
-
-// Consume a login-verification OTP. Returns the user — caller issues the
-// session. Generic error for unknown email so we don't leak existence to
-// someone who didn't go through the password step.
-export async function verifyLoginOtp({ email, code }) {
-  const user = await User.findOne({ email: normalizeEmail(email) });
-  if (!user) {
-    throw new ApiError(400, "Incorrect code or email.", { code: "OTP_INCORRECT" });
-  }
-  await consumeOtp({
-    user,
-    purpose: OTP_PURPOSES.LOGIN_VERIFICATION,
-    code,
-  });
   return user;
 }
 

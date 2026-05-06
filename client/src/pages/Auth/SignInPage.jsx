@@ -21,20 +21,7 @@ export function SignInPage() {
     setTopError(null);
     setSubmitting(true);
     try {
-      const result = await signin(values);
-      if (result?.pendingOtp) {
-        // Two-step signin: creds OK, OTP sent. Hand off to /login-otp where
-        // the user enters the code from their email. devOtp is dev-only and
-        // gets surfaced as a hint on that page.
-        navigate("/login-otp", {
-          state: {
-            email: result.email,
-            devOtp: result.devOtp,
-            redirectTo,
-          },
-        });
-        return;
-      }
+      await signin(values);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setShakeKey((k) => k + 1);

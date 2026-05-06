@@ -14,7 +14,6 @@ import { PackingPage } from "./pages/Public/info/Packing";
 import { SafetyPage } from "./pages/Public/info/Safety";
 import { SignInPage } from "./pages/Auth/SignInPage";
 import { SignUpPage } from "./pages/Auth/SignUpPage";
-import { LoginOtpPage } from "./pages/Auth/LoginOtpPage";
 import { DashboardPage } from "./pages/User/DashboardPage";
 import { ForgotPasswordPage } from "./pages/Auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/Auth/ResetPasswordPage";
@@ -73,7 +72,6 @@ function App() {
           <Route path="/resources/safety" element={<AnimatedPage><SafetyPage /></AnimatedPage>} />
           <Route path="/signin" element={<AnimatedPage><RedirectIfAuthed><SignInPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/signup" element={<AnimatedPage><RedirectIfAuthed><SignUpPage /></RedirectIfAuthed></AnimatedPage>} />
-          <Route path="/login-otp" element={<AnimatedPage><RedirectIfAuthed><LoginOtpPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/forgot-password" element={<AnimatedPage><RedirectIfAuthed><ForgotPasswordPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/reset-password" element={<AnimatedPage><RedirectIfAuthed><ResetPasswordPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
