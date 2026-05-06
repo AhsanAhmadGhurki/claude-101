@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { Link } from "react-router-dom";
-import { api, ApiError } from "../../lib/api/client";
+import { api, ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
 import { Shake } from "../../auth/Shake";
 import { SuccessCheck } from "../../auth/SuccessCheck";

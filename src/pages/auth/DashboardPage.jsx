@@ -14,7 +14,7 @@ import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/authContext";
-import { api } from "../../lib/api/client";
+import { api } from "../../../client/src/api/client";
 
 const { Title, Text } = Typography;
 

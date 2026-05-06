@@ -14,7 +14,7 @@ import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/authContext";
-import { api, ApiError } from "../../lib/api/client";
+import { api, ApiError } from "../../../client/src/api/client";
 import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
 import { Shake } from "../../auth/Shake";
 import { scorePassword } from "../../auth/passwordStrength";

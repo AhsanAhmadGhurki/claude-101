@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Alert, Spin, Input, Form } from "antd";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
-import { api, ApiError } from "../../lib/api/client";
+import { api, ApiError } from "../../../client/src/api/client";
 import { useAuth } from "../../auth/authContext";
 import { AuthShell } from "./AuthShell";
 import { SuccessCheck } from "../../auth/SuccessCheck";

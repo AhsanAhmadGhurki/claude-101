@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/authContext";
-import { ApiError } from "../../lib/api/client";
+import { ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
 import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
 import { Shake } from "../../auth/Shake";
