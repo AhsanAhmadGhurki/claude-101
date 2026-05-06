@@ -17,12 +17,9 @@ const RESOURCE_LINKS = [
   { label: "Travel safety", to: "/resources/safety" },
 ];
 
-const SOCIAL = [
-  { icon: "mdi:instagram", label: "Instagram", href: "#" },
-  { icon: "mdi:twitter", label: "Twitter / X", href: "#" },
-  { icon: "mdi:youtube", label: "YouTube", href: "#" },
-  { icon: "mdi:linkedin", label: "LinkedIn", href: "#" },
-];
+// Social icons are intentionally omitted until we have real account URLs —
+// href="#" placeholders are an accessibility / link-integrity smell. Restore
+// this block as a list of { icon, label, href } when the accounts exist.
 
 const container = {
   hidden: {},
@@ -79,21 +76,6 @@ export function Footer() {
           <p className="text-sm text-fg-muted mt-3 leading-relaxed max-w-xs">
             Personal AI travel planner for the mountains, valleys, and cities of Pakistan. From a one-line idea to a day-by-day itinerary in seconds.
           </p>
-          <div className="flex gap-2 mt-5">
-            {SOCIAL.map((s) => (
-              <motion.a
-                key={s.label}
-                href={s.href}
-                aria-label={s.label}
-                whileHover={{ y: -3, scale: 1.08 }}
-                whileTap={{ scale: 0.94 }}
-                transition={{ type: "spring", stiffness: 320, damping: 18 }}
-                className="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-2 border border-line text-fg-muted hover:text-fg hover:border-accent/60 transition-colors"
-              >
-                <Icon icon={s.icon} className="text-lg" />
-              </motion.a>
-            ))}
-          </div>
         </motion.div>
 
         <motion.div variants={fadeUp} className="md:col-span-2">
