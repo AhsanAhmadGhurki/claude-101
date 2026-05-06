@@ -127,6 +127,19 @@ export const api = {
   changePassword: (payload) =>
     request("/users/change-password", { method: "POST", body: payload }),
 
-  // Demo protected endpoint (kept for back-compat)
+  // Dashboard summary — user + trip stats.
   dashboard: () => request("/dashboard"),
+
+  // Trips — server-side persistence. Re-saving the same
+  // (destination, duration, tripType) triple returns the existing record
+  // with a refreshed timestamp instead of a duplicate (handled server-side).
+  listTrips: () => request("/trips"),
+  getTrip: (id) => request(`/trips/${encodeURIComponent(id)}`),
+  // Public — does not require auth. Used by /trip/share/:shareId to render
+  // an itinerary for any recipient with the share link.
+  getSharedTrip: (shareId) =>
+    request(`/trips/share/${encodeURIComponent(shareId)}`),
+  saveTrip: (trip) => request("/trips", { method: "POST", body: trip }),
+  deleteTrip: (id) =>
+    request(`/trips/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };

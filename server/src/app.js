@@ -5,9 +5,11 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import tripRoutes from "./routes/tripRoutes.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import { csrfProtection } from "./middleware/csrf.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
+import { tripStats } from "./services/tripService.js";
 
 export function createApp() {
   const app = express();
@@ -33,13 +35,20 @@ export function createApp() {
 
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
+  app.use("/api/trips", tripRoutes);
 
-  // Backwards-compat with the original protected demo endpoint.
-  app.get("/api/dashboard", requireAuth, (req, res) => {
-    res.json({
-      message: `Welcome back, ${req.user.name}.`,
-      user: req.user.toPublicJSON(),
-    });
+  // Returns real account data — trip count, last-saved timestamp/destination
+  // — so the dashboard UI doesn't need a second round-trip after mount.
+  app.get("/api/dashboard", requireAuth, async (req, res, next) => {
+    try {
+      const stats = await tripStats(req.user);
+      res.json({
+        user: req.user.toPublicJSON(),
+        stats,
+      });
+    } catch (err) {
+      next(err);
+    }
   });
 
   app.use(notFound);

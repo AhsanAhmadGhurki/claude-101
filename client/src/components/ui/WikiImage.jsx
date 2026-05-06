@@ -80,7 +80,7 @@ export function WikiImage({
           alt={alt ?? placeholderLabel}
           loading={loading}
           decoding="async"
-          fetchpriority={fetchPriority}
+          fetchPriority={fetchPriority}
           onError={() => setErrorIndex((i) => i + 1)}
           className={imgClassName}
         />

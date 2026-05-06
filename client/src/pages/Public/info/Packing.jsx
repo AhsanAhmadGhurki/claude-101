@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
-import { Button, message } from "antd";
+import { Button, App } from "antd";
 import { motion } from "framer-motion";
 import { InfoLayout } from "./InfoLayout";
 
@@ -113,6 +113,7 @@ function loadState() {
 }
 
 export function PackingPage() {
+  const { message } = App.useApp();
   const [checked, setChecked] = useState(loadState);
 
   const toggle = (id) => {

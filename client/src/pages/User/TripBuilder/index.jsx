@@ -168,7 +168,23 @@ export function TripBuilderPage() {
           transition={{ delay: 0.15, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-7 rounded-3xl bg-surface border border-line surface-shadow p-7 sm:p-8"
         >
-          <SectionLabel step="01" title="Your idea" right={`${prompt.length} / 240`} />
+          <SectionLabel
+            step="01"
+            title="Your idea"
+            right={
+              <span
+                className={
+                  prompt.length >= 220
+                    ? "text-red-400 font-semibold"
+                    : prompt.length >= 192
+                    ? "text-yellow-400 font-semibold"
+                    : "text-fg-subtle"
+                }
+              >
+                {prompt.length} / 240
+              </span>
+            }
+          />
           <motion.div
             whileHover={{ scale: 1.005 }}
             transition={{ duration: 0.2 }}
@@ -354,13 +370,18 @@ export function TripBuilderPage() {
                   exit={{ opacity: 0 }}
                   className="px-6 pb-6"
                 >
-                  <h3 className="text-2xl font-bold text-fg">
-                    Tell me your idea
-                  </h3>
-                  <p className="text-fg-muted text-sm mt-2">
-                    Type a sentence above or tap a city below — I'll plan it live.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="rounded-2xl border-2 border-dashed border-line bg-surface-2/40 px-5 py-10 sm:py-12 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center">
+                      <Icon icon="mdi:auto-fix" className="text-2xl" />
+                    </div>
+                    <p className="mt-4 text-base text-fg-muted leading-relaxed max-w-sm mx-auto">
+                      Your live itinerary preview will appear here as you type.
+                    </p>
+                  </div>
+                  <div className="mt-5 text-[11px] uppercase tracking-[0.25em] text-fg-subtle font-semibold">
+                    Or jump to a city
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {DESTINATION_CHOICES.map((d) => (
                       <button
                         key={d.value}
@@ -516,7 +537,7 @@ export function TripBuilderPage() {
                       block
                       onClick={handleConfirm}
                       icon={<Icon icon="mdi:arrow-right" />}
-                      iconPosition="end"
+                      iconPlacement="end"
                       className="!h-12 !mt-6 !font-semibold"
                     >
                       View full trip
@@ -538,7 +559,7 @@ function SectionLabel({ step, title, right, className = "" }) {
       <label className="text-xs uppercase tracking-widest text-fg-subtle font-semibold">
         Step {step} · {title}
       </label>
-      {right && <span className="text-xs text-fg-subtle">{right}</span>}
+      {right && <span className="text-xs">{right}</span>}
     </div>
   );
 }

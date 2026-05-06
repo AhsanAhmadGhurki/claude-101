@@ -116,13 +116,13 @@ export function VerifyEmailPage() {
     >
       <Shake trigger={shakeKey}>
         {topError && (
-          <Alert type="error" showIcon message={topError} className="!mb-4" />
+          <Alert type="error" showIcon title={topError} className="!mb-4" />
         )}
         {topNotice && (
           <Alert
             type="success"
             showIcon
-            message={topNotice}
+            title={topNotice}
             description={
               devOtp ? (
                 <span>

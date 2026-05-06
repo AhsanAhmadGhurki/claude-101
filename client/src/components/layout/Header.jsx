@@ -40,6 +40,9 @@ const NAV_LINKS = [
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Track Antd Dropdown open state so the trigger button can advertise
+  // aria-expanded for screen readers.
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [prevPath, setPrevPath] = useState(location.pathname);
@@ -194,10 +197,18 @@ export function Header() {
         >
           <ThemeToggle />
           {user ? (
-            <Dropdown menu={userMenu} placement="bottomRight" trigger={["click"]}>
+            <Dropdown
+              menu={userMenu}
+              placement="bottomRight"
+              trigger={["click"]}
+              open={accountMenuOpen}
+              onOpenChange={setAccountMenuOpen}
+            >
               <button
                 type="button"
                 aria-label="Account menu"
+                aria-haspopup="menu"
+                aria-expanded={accountMenuOpen}
                 className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-1.5 py-1 hover:bg-surface-hover transition"
               >
                 <Avatar size={28} className="!bg-accent !text-bg !font-bold">
@@ -231,7 +242,9 @@ export function Header() {
             onClick={() => setMenuOpen((v) => !v)}
             whileTap={{ scale: 0.92 }}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-haspopup="menu"
             aria-expanded={menuOpen}
+            aria-controls="mobile-nav-drawer"
             className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg border border-line bg-surface text-fg hover:bg-surface-hover transition"
           >
             <Icon
@@ -244,93 +257,135 @@ export function Header() {
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ opacity: 0, y: -8, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: "auto" }}
-            exit={{ opacity: 0, y: -8, height: 0 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="md:hidden overflow-hidden bg-bg/95 backdrop-blur-md border-b border-line"
-          >
-            <nav className="flex flex-col px-4 py-3">
-              {NAV_LINKS.map((link, i) => (
-                <motion.div
-                  key={link.to}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.25 }}
+          <>
+            {/* Click-outside backdrop. Stays under the panel and dims the
+                page so the drawer reads as a modal layer. */}
+            <motion.button
+              key="mobile-backdrop"
+              type="button"
+              aria-label="Close menu"
+              tabIndex={-1}
+              onClick={() => setMenuOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px]"
+            />
+            <motion.aside
+              key="mobile-drawer"
+              id="mobile-nav-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site navigation"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="md:hidden fixed top-0 right-0 z-50 h-full w-[min(20rem,85vw)] bg-bg border-l border-line shadow-2xl flex flex-col"
+            >
+              <div className="flex items-center justify-between px-4 py-4 border-b border-line">
+                <span className="text-base font-bold tracking-tight text-fg">
+                  Adventure<span className="text-accent">.AI</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close menu"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-fg-muted hover:text-fg hover:bg-surface-hover transition"
                 >
-                  <NavLink
-                    to={link.to}
-                    end={link.end}
-                    onClick={() => setMenuOpen(false)}
-                    className={({ isActive }) =>
-                      `block px-3 py-3 rounded-lg text-base font-medium transition ${
-                        isActive
-                          ? "bg-accent/15 text-accent"
-                          : "text-fg-muted hover:bg-surface-hover hover:text-fg"
-                      }`
-                    }
+                  <Icon icon="mdi:close" className="text-2xl" />
+                </button>
+              </div>
+
+              <nav className="flex-1 overflow-y-auto px-3 py-3">
+                <div className="text-[10px] uppercase tracking-[0.25em] text-fg-subtle font-semibold px-3 mb-1">
+                  Navigate
+                </div>
+                {NAV_LINKS.map((link, i) => (
+                  <motion.div
+                    key={link.to}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + i * 0.04, duration: 0.25 }}
                   >
-                    {link.label}
-                  </NavLink>
-                </motion.div>
-              ))}
-              <div className="my-2 border-t border-line" />
-              {user ? (
-                <>
-                  <NavLink
-                    to="/dashboard"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
-                  >
-                    Dashboard
-                  </NavLink>
-                  <NavLink
-                    to="/saved-trips"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
-                  >
-                    Saved trips
-                  </NavLink>
-                  <NavLink
-                    to="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
-                  >
-                    Profile
-                  </NavLink>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      requestSignout();
-                    }}
-                    className="text-left block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
-                  >
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <NavLink
-                    to="/signin"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
-                  >
-                    Sign in
-                  </NavLink>
-                  <NavLink
-                    to="/signup"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-3 rounded-lg text-base font-medium text-accent hover:bg-surface-hover"
-                  >
-                    Create account
-                  </NavLink>
-                </>
-              )}
-            </nav>
-          </motion.div>
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      onClick={() => setMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-3 py-3 rounded-lg text-base font-medium transition ${
+                          isActive
+                            ? "bg-accent/15 text-accent"
+                            : "text-fg-muted hover:bg-surface-hover hover:text-fg"
+                        }`
+                      }
+                    >
+                      {link.label}
+                    </NavLink>
+                  </motion.div>
+                ))}
+
+                <div className="my-3 border-t border-line" />
+
+                <div className="text-[10px] uppercase tracking-[0.25em] text-fg-subtle font-semibold px-3 mb-1">
+                  Account
+                </div>
+                {user ? (
+                  <>
+                    <NavLink
+                      to="/dashboard"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                    >
+                      <Icon icon="mdi:view-dashboard-outline" /> Dashboard
+                    </NavLink>
+                    <NavLink
+                      to="/saved-trips"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                    >
+                      <Icon icon="mdi:bookmark-outline" /> Saved trips
+                    </NavLink>
+                    <NavLink
+                      to="/profile"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                    >
+                      <Icon icon="mdi:account-cog-outline" /> Profile
+                    </NavLink>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        requestSignout();
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                    >
+                      <Icon icon="mdi:logout" /> Sign out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <NavLink
+                      to="/signin"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                    >
+                      Sign in
+                    </NavLink>
+                    <NavLink
+                      to="/signup"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-3 py-3 rounded-lg text-base font-medium text-accent hover:bg-surface-hover"
+                    >
+                      Create account
+                    </NavLink>
+                  </>
+                )}
+              </nav>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
 
@@ -343,7 +398,7 @@ export function Header() {
         cancelText="Stay signed in"
         okButtonProps={{ danger: true, loading: signingOut }}
         cancelButtonProps={{ disabled: signingOut }}
-        maskClosable={!signingOut}
+        mask={{ closable: !signingOut }}
       >
         You'll need to enter your credentials to sign back in.
       </Modal>

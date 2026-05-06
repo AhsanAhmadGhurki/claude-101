@@ -95,3 +95,23 @@
       0 24px 64px -24px rgb(var(--shadow-color) / 0.18);
   }
 }
+
+/* Global keyboard focus indicator. Targets every interactive element so
+   keyboard users can always see where they are without us having to
+   remember focus-visible:ring-2 on individual components. The :focus-visible
+   pseudo only fires for keyboard focus, so mouse clicks don't get the ring. */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [role="menuitem"]:focus-visible,
+  [role="link"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--bg)), 0 0 0 4px theme("colors.lime.400");
+    border-radius: 0.375rem;
+  }
+}

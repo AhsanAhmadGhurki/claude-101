@@ -22,6 +22,24 @@ const credentialLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Tighter per-IP throttle for signin specifically — 5 attempts per
+// 15 minutes per IP. Matches typical password-brute-force thresholds and
+// gives us a backstop even if the client-side lockout warning is bypassed.
+// Surfaces a stable `code` so the SPA can render a "too many attempts" UI
+// rather than a generic 429.
+const signinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "Too many sign-in attempts. Try again in a few minutes.",
+      code: "RATE_LIMITED",
+    });
+  },
+});
+
 // Per-IP throttle on email-sending endpoints. Looser bucket; tightens the
 // budget for using us as a spam relay.
 const ipEmailLimiter = rateLimit({
@@ -50,7 +68,7 @@ const perEmailLimiter = rateLimit({
 });
 
 router.post("/signup", credentialLimiter, perEmailLimiter, signup);
-router.post("/signin", credentialLimiter, signin);
+router.post("/signin", signinLimiter, credentialLimiter, signin);
 router.post("/refresh", credentialLimiter, refresh);
 router.post("/signout", signout);
 

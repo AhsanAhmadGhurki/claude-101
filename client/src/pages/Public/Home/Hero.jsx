@@ -76,6 +76,7 @@ export function Hero() {
   const [coordIdx, setCoordIdx] = useState(0);
   const [departed, setDeparted] = useState(false);
   const [shake, setShake] = useState(0);
+  const [emptyError, setEmptyError] = useState(false);
   const navigate = useNavigate();
   const heroRef = useRef(null);
   const trackRef = useRef(null);
@@ -145,6 +146,7 @@ export function Hero() {
 
   const handleSubmitClick = () => {
     if (!prompt.trim()) {
+      setEmptyError(true);
       triggerShake();
       return;
     }
@@ -162,6 +164,7 @@ export function Hero() {
     }
     if (!prompt.trim()) {
       animate(swipeX, 0, { type: "spring", stiffness: 500, damping: 30 });
+      setEmptyError(true);
       triggerShake();
       return;
     }
@@ -527,9 +530,16 @@ export function Hero() {
                       variant="borderless"
                       placeholder="A vibe, a place, a sentence..."
                       value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
+                      onChange={(e) => {
+                        setPrompt(e.target.value);
+                        if (emptyError && e.target.value.trim()) {
+                          setEmptyError(false);
+                        }
+                      }}
                       onPressEnter={handleSubmitClick}
                       disabled={departed}
+                      aria-invalid={emptyError}
+                      aria-describedby={emptyError ? "hero-prompt-error" : undefined}
                       className="!bg-transparent !text-fg !text-[15px] !p-0 placeholder:!text-fg-subtle leading-none"
                     />
                   </motion.div>
@@ -590,6 +600,23 @@ export function Hero() {
                 </div>
               </motion.div>
             </motion.div>
+
+            <AnimatePresence>
+              {emptyError && (
+                <motion.p
+                  id="hero-prompt-error"
+                  role="alert"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-2 text-xs text-red-400 flex items-center gap-1.5"
+                >
+                  <Icon icon="mdi:alert-circle-outline" className="text-sm" />
+                  Please describe your trip
+                </motion.p>
+              )}
+            </AnimatePresence>
 
             <div className="mt-4 flex flex-wrap gap-2 items-center">
               <motion.span

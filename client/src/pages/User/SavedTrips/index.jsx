@@ -1,24 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
+import { App } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
-
-const STORAGE_KEY = "savedTrips";
-
-function readSaved() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeSaved(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-}
+import { api, ApiError } from "../../../api/client";
+import { PageLoader } from "../../../components/ui/PageLoader";
+import { ErrorState } from "../../../components/ui/ErrorState";
 
 function formatSavedAt(ts) {
   if (!ts) return "Saved";
@@ -41,39 +28,87 @@ function formatSavedAt(ts) {
 }
 
 function tripKey(trip, index) {
-  return trip?.savedId ?? `${trip?.destination ?? "trip"}-${index}`;
+  return trip?.id ?? `${trip?.destination ?? "trip"}-${index}`;
+}
+
+// Map a server trip row to the shape the cards expect — surfaces a
+// `days` array + `tripType` for the eyebrow/duration label.
+function flatten(serverTrip) {
+  const payload = serverTrip?.payload ?? {};
+  return {
+    ...payload,
+    id: serverTrip.id,
+    destination: serverTrip.destination ?? payload.destination,
+    region: serverTrip.region ?? payload.region,
+    tripType: serverTrip.tripType ?? payload.tripType,
+    duration: serverTrip.duration,
+    summary: serverTrip.summary ?? payload.summary,
+    prompt: serverTrip.prompt ?? payload.prompt,
+    shareId: serverTrip.shareId,
+    savedAt: serverTrip.savedAt,
+  };
 }
 
 export function SavedTripsPage() {
   const navigate = useNavigate();
-  const [trips, setTrips] = useState(() => readSaved());
+  const { message } = App.useApp();
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key === STORAGE_KEY) setTrips(readSaved());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+  const loadTrips = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { trips: rows } = await api.listTrips();
+      setTrips(Array.isArray(rows) ? rows.map(flatten) : []);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    loadTrips();
+  }, [loadTrips]);
+
   const openTrip = (trip) => {
-    sessionStorage.setItem("lastTrip", JSON.stringify(trip));
-    const id = trip?.savedId ?? "saved";
-    navigate(`/trip/${id}`);
-  };
-
-  const deleteTrip = (trip, index) => {
-    const next = trips.filter((t, i) =>
-      trip?.savedId ? t.savedId !== trip.savedId : i !== index
+    // Stash the unwrapped trip for /trip/:id to read synchronously while it
+    // also re-validates against the server. Marked savedFromServer so the
+    // page's Save button starts in the "Saved ✓" state.
+    sessionStorage.setItem(
+      "lastTrip",
+      JSON.stringify({ ...trip, serverId: trip.id, savedFromServer: true })
     );
-    setTrips(next);
-    writeSaved(next);
+    navigate(`/trip/${trip.id}`);
   };
 
-  const clearAll = () => {
+  const deleteTrip = async (trip) => {
+    const prev = trips;
+    setTrips((curr) => curr.filter((t) => t.id !== trip.id));
+    try {
+      await api.deleteTrip(trip.id);
+    } catch (err) {
+      setTrips(prev);
+      message.error(
+        err instanceof ApiError && err.message
+          ? err.message
+          : "Couldn't delete that trip. Try again."
+      );
+    }
+  };
+
+  const clearAll = async () => {
     if (!window.confirm("Remove all saved trips? This cannot be undone.")) return;
+    const prev = trips;
     setTrips([]);
-    writeSaved([]);
+    try {
+      await Promise.all(prev.map((t) => api.deleteTrip(t.id)));
+    } catch {
+      setTrips(prev);
+      message.error("Couldn't clear saved trips. Try again.");
+    }
   };
 
   return (
@@ -92,12 +127,16 @@ export function SavedTripsPage() {
             Saved trips
           </h1>
           <p className="mt-2 text-fg-muted text-sm sm:text-base">
-            {trips.length === 0
+            {loading
+              ? "Loading your saved trips…"
+              : error
+              ? "We couldn't load your saved trips."
+              : trips.length === 0
               ? "Trips you save will appear here."
-              : `${trips.length} ${trips.length === 1 ? "trip" : "trips"} saved on this device.`}
+              : `${trips.length} ${trips.length === 1 ? "trip" : "trips"} saved to your account.`}
           </p>
         </div>
-        {trips.length > 0 && (
+        {!loading && !error && trips.length > 0 && (
           <button
             type="button"
             onClick={clearAll}
@@ -109,7 +148,19 @@ export function SavedTripsPage() {
         )}
       </motion.header>
 
-      {trips.length === 0 ? (
+      {loading ? (
+        <PageLoader label="Loading saved trips…" />
+      ) : error ? (
+        <ErrorState
+          title="Couldn't load saved trips"
+          message={
+            error?.message ||
+            "We couldn't reach the server. Check your connection and try again."
+          }
+          onRetry={loadTrips}
+          retrying={loading}
+        />
+      ) : trips.length === 0 ? (
         <EmptyState onPlan={() => navigate("/builder")} />
       ) : (
         <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -160,7 +211,7 @@ export function SavedTripsPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteTrip(trip, index)}
+                      onClick={() => deleteTrip(trip)}
                       aria-label="Delete saved trip"
                       className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-fg-muted hover:text-red-500 hover:bg-red-500/10 transition"
                     >

@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Button, Modal, message } from "antd";
+import { Button, Modal, App } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { WikiImage } from "../../../components/ui/WikiImage";
 import { toWikiQuery } from "../../../lib/utils/toWikiQuery";
 import { useAuth } from "../../../store/auth/authContext";
+import { api, ApiError } from "../../../api/client";
+import { PageLoader } from "../../../components/ui/PageLoader";
+import { ErrorState } from "../../../components/ui/ErrorState";
+
+const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
 
 function pickDayQueries(day, destination) {
   const queries = [];
@@ -38,28 +43,17 @@ function pickDayLabel(day) {
   return day.title || day.activities?.[0] || "";
 }
 
-// Resolve a trip from the URL :id. Tries, in order:
-//   1. localStorage["trip:<id>"]   — set by TripBuilder on confirm.
-//   2. savedTrips array scan        — Open from /saved-trips passes savedId.
-//   3. sessionStorage["lastTrip"]   — legacy fallback for old /trip/current
-//      URLs and same-tab continuity if the localStorage entry was evicted.
-// Returns null if nothing matches; the page then redirects to /builder.
-function loadTripById(id) {
+// Synchronous local sources for the trip:
+//   - localStorage["trip:<id>"]    written by TripBuilder on confirm
+//   - sessionStorage["lastTrip"]   same-tab fallback
+// Server-saved trips (24-char ObjectId) are loaded async via api.getTrip.
+function loadLocalTrip(id) {
   if (id) {
     try {
       const direct = localStorage.getItem(`trip:${id}`);
       if (direct) return JSON.parse(direct);
     } catch {
       // Corrupt entry — fall through to next source.
-    }
-    try {
-      const saved = JSON.parse(localStorage.getItem("savedTrips") || "[]");
-      if (Array.isArray(saved)) {
-        const match = saved.find((t) => t?.savedId === id || t?.tripId === id);
-        if (match) return match;
-      }
-    } catch {
-      // ignore parse error
     }
   }
   try {
@@ -71,48 +65,25 @@ function loadTripById(id) {
   return null;
 }
 
-// Identity used to dedupe saves — the same trip shouldn't appear twice in
-// the saved list. Prompt is the cleanest signal (one prompt -> one trip).
-// Falls back to a content fingerprint for trips without a prompt field.
-function tripIdentity(trip) {
-  if (!trip) return null;
-  if (typeof trip.prompt === "string" && trip.prompt.trim()) {
-    return `p:${trip.prompt.trim().toLowerCase()}`;
-  }
-  return `f:${trip.destination ?? ""}|${trip.tripType ?? ""}|${trip.days?.length ?? 0}|${(trip.summary ?? "").slice(0, 80)}`;
-}
-
-function readSavedTrips() {
-  try {
-    const raw = localStorage.getItem("savedTrips");
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function makeSavedId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
-  return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export function TripDetailsPage() {
+export function TripDetailsPage({ mode = "owner" }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { id: routeId } = useParams();
   const { user } = useAuth();
-  const [trip] = useState(() => loadTripById(routeId));
+  const { message } = App.useApp();
+  const isShareView = mode === "share";
+
+  const [trip, setTrip] = useState(null);
+  // Server identity for this trip — used to build the Share URL once
+  // available. Populated from local cache, owner fetch, or save response.
+  const [shareId, setShareId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  // Whether *this* trip exists on the server for the current user. True after
+  // a successful api.saveTrip, or when we fetched it from the server by id.
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [activeDay, setActiveDay] = useState(1);
-  // Reflects whether this trip is currently in localStorage["savedTrips"].
-  // Initialized from storage on mount so the bookmark icon is correct even
-  // when revisiting a previously-saved trip.
-  const [saved, setSaved] = useState(() => {
-    const t = loadTripById(routeId);
-    if (!t) return false;
-    const id = tripIdentity(t);
-    return readSavedTrips().some((s) => tripIdentity(s) === id);
-  });
   // Open when an unauthenticated user clicks Save — prompts them to sign in
   // and preserves the current location so they return here afterwards.
   const [loginPromptOpen, setLoginPromptOpen] = useState(false);
@@ -127,20 +98,93 @@ export function TripDetailsPage() {
   const heroContentY = useTransform(scrollYProgress, [0, 1], ["0%", "15%"]);
   const heroContentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
 
+  // Resolves the trip from the URL. Three cases:
+  //   - Share view (/trip/share/:shareId) → fetch the public endpoint, no auth.
+  //   - ObjectId in /trip/:id              → owner fetch behind auth.
+  //   - UUID / t_… in /trip/:id            → local builder draft.
+  const loadTrip = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+
+    if (isShareView) {
+      try {
+        const { trip: shared } = await api.getSharedTrip(routeId);
+        setTrip(shared.payload ?? shared);
+        setShareId(shared.shareId ?? routeId);
+        // Recipients are not the owner — Save/Edit don't apply to them.
+        setSaved(false);
+        setLoading(false);
+        return;
+      } catch (err) {
+        setLoadError(err);
+        setLoading(false);
+        return;
+      }
+    }
+
+    const local = loadLocalTrip(routeId);
+    if (local) {
+      // Local-cached payload from /trip/<id> (often unwrapped from the
+      // server response). Render immediately. If it carries a server id we
+      // can mark it saved without an extra round-trip.
+      setTrip(local.payload ?? local);
+      setShareId(local.shareId ?? null);
+      setSaved(Boolean(local.savedFromServer || local.serverId));
+      setLoading(false);
+      return;
+    }
+
+    if (routeId && OBJECT_ID_RE.test(routeId) && user) {
+      try {
+        const { trip: serverTrip } = await api.getTrip(routeId);
+        setTrip(serverTrip.payload ?? serverTrip);
+        setShareId(serverTrip.shareId ?? null);
+        setSaved(true);
+        setLoading(false);
+        return;
+      } catch (err) {
+        setLoadError(err);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // No local cache and either anonymous or non-ObjectId id — nothing to
+    // show. Treat as "not found" so the user gets a retry path back to the
+    // builder rather than a blank page.
+    setLoadError(
+      new ApiError("We couldn't find this trip. It may have been removed.", {
+        status: 404,
+      })
+    );
+    setLoading(false);
+  }, [routeId, user, isShareView]);
+
   useEffect(() => {
-    if (!trip) navigate("/builder");
-  }, [trip, navigate]);
+    loadTrip();
+  }, [loadTrip]);
 
   const handleShare = async () => {
+    // Recipients can only open a trip URL that maps to a server-stored
+    // share token. Builder drafts and unsaved trips don't have one yet —
+    // surface that explicitly instead of copying a URL nobody else can
+    // open.
+    if (!shareId) {
+      message.warning(
+        "Save this trip first to get a shareable link."
+      );
+      return;
+    }
+    const url = `${window.location.origin}/trip/share/${shareId}`;
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      message.success({ content: "Link copied to clipboard!", duration: 2 });
+      await navigator.clipboard.writeText(url);
+      message.success({ content: "Share link copied to clipboard!", duration: 2 });
     } catch {
       message.error("Could not copy link");
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Saving is gated behind sign-in. Anonymous users see a prompt with
     // a sign-in CTA; the post-signin redirect chain (signin → login-otp
     // → here) carries the trip URL via location.state.from so they land
@@ -149,27 +193,57 @@ export function TripDetailsPage() {
       setLoginPromptOpen(true);
       return;
     }
+    if (saved || saving || !trip) return;
 
-    const id = tripIdentity(trip);
-    const stored = readSavedTrips();
-    const exists = stored.some((s) => tripIdentity(s) === id);
-
-    if (exists) {
-      // Toggle off — remove the matching entry rather than create a duplicate.
-      const next = stored.filter((s) => tripIdentity(s) !== id);
-      localStorage.setItem("savedTrips", JSON.stringify(next));
-      setSaved(false);
-      message.info({ content: "Removed from saved trips.", duration: 2 });
-      return;
+    setSaving(true);
+    try {
+      const { trip: serverTrip } = await api.saveTrip({
+        ...trip,
+        duration: trip.days?.length,
+      });
+      setSaved(true);
+      setShareId(serverTrip.shareId ?? null);
+      // Cache server identity locally so a refresh on /trip/<localId> still
+      // remembers this is saved — no extra round trip on next view.
+      try {
+        const cached = JSON.parse(
+          localStorage.getItem(`trip:${routeId}`) || "null"
+        );
+        if (cached) {
+          localStorage.setItem(
+            `trip:${routeId}`,
+            JSON.stringify({
+              ...cached,
+              serverId: serverTrip.id,
+              shareId: serverTrip.shareId,
+              savedFromServer: true,
+            })
+          );
+        }
+      } catch {
+        // Storage write is best-effort.
+      }
+      message.success({ content: "Saved ✓", duration: 2 });
+    } catch (err) {
+      // Server enforces email verification for write operations. Send the
+      // user to the verify-email flow instead of just toasting an error.
+      if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
+        message.warning(
+          "Verify your email to save trips. We'll send you to the verification page."
+        );
+        navigate("/verify-email", {
+          state: { email: user?.email, returnTo: location.pathname },
+        });
+        return;
+      }
+      message.error(
+        err instanceof ApiError && err.message
+          ? `Save failed — ${err.message}`
+          : "Save failed — try again"
+      );
+    } finally {
+      setSaving(false);
     }
-
-    // Tag with savedAt/savedId so the Saved Trips page can render dates and
-    // delete by stable id rather than list index.
-    const stamped = { ...trip, savedAt: Date.now(), savedId: makeSavedId() };
-    const next = [stamped, ...stored].slice(0, 20);
-    localStorage.setItem("savedTrips", JSON.stringify(next));
-    setSaved(true);
-    message.success({ content: "Trip saved!", duration: 2 });
   };
 
   const handleEdit = () => {
@@ -183,7 +257,30 @@ export function TripDetailsPage() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  if (!trip) return null;
+  if (loading) {
+    return <PageLoader label="Loading trip…" />;
+  }
+
+  if (loadError || !trip) {
+    return (
+      <div className="pt-32 pb-24 px-6 max-w-3xl mx-auto">
+        <ErrorState
+          title="Couldn't load this trip"
+          message={
+            loadError?.message ||
+            "We couldn't reach the server. Check your connection and try again."
+          }
+          onRetry={loadTrip}
+          retrying={loading}
+        />
+        <div className="text-center mt-4">
+          <Button type="link" onClick={() => navigate("/builder")}>
+            Plan a new trip instead
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const goToSignIn = () => {
     setLoginPromptOpen(false);
@@ -261,28 +358,44 @@ export function TripDetailsPage() {
             className="mt-8 flex flex-wrap gap-2"
           >
             {[
-              {
+              // Save/Edit are owner-only — hidden from recipients of a
+              // share link, who don't own this trip.
+              !isShareView && {
+                key: "save",
                 fn: handleSave,
-                icon: saved ? "mdi:bookmark" : "mdi:bookmark-outline",
-                label: saved ? "Saved" : "Save",
+                icon: saved ? "mdi:check-circle" : "mdi:bookmark-outline",
+                label: saved ? "Saved ✓" : saving ? "Saving…" : "Save",
+                disabled: saved || saving,
+                loading: saving,
               },
-              { fn: handleShare, icon: "mdi:share-outline", label: "Share" },
-              { fn: handleEdit, icon: "mdi:pencil-outline", label: "Edit" },
-              { fn: () => window.print(), icon: "mdi:printer-outline", label: "Print" },
-            ].map((btn, i) => (
+              { key: "share", fn: handleShare, icon: "mdi:share-outline", label: "Share" },
+              !isShareView && {
+                key: "edit",
+                fn: handleEdit,
+                icon: "mdi:pencil-outline",
+                label: "Edit",
+              },
+              { key: "print", fn: () => window.print(), icon: "mdi:printer-outline", label: "Print" },
+            ].filter(Boolean).map((btn, i) => (
               <motion.div
-                key={btn.label}
+                key={btn.key}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + i * 0.08 }}
-                whileHover={{ scale: 1.08, y: -3 }}
-                whileTap={{ scale: 0.92 }}
+                whileHover={btn.disabled ? undefined : { scale: 1.08, y: -3 }}
+                whileTap={btn.disabled ? undefined : { scale: 0.92 }}
               >
                 <Button
                   onClick={btn.fn}
-                  icon={<Icon icon={btn.icon} />}
+                  disabled={btn.disabled}
+                  loading={btn.loading}
+                  icon={btn.loading ? undefined : <Icon icon={btn.icon} />}
                   size="large"
-                  className="!bg-white/15 !border-white/30 !text-white hover:!bg-white/25 backdrop-blur !font-medium"
+                  className={
+                    saved && btn.key === "save"
+                      ? "!bg-emerald-500/20 !border-emerald-400/50 !text-emerald-300 backdrop-blur !font-semibold disabled:!opacity-100 disabled:!cursor-default"
+                      : "!bg-white/15 !border-white/30 !text-white hover:!bg-white/25 backdrop-blur !font-medium"
+                  }
                 >
                   {btn.label}
                 </Button>

@@ -25,7 +25,15 @@ export function ResetPasswordPage() {
   const [devOtp, setDevOtp] = useState(location.state?.devOtp ?? null);
 
   const presetEmail = location.state?.email || params.get("email") || "";
+  // Tokens come in as ?token=<otp> from the magic link in the email. We
+  // prefer that over location.state so click-from-email always works even
+  // after a tab refresh. Treat token and code as the same thing.
+  const presetToken =
+    params.get("token") || params.get("code") || location.state?.code || "";
   const password = Form.useWatch("password", form) || "";
+  // When the email arrived via the magic link there's nothing meaningful
+  // for the user to type — collapse those fields to keep the form short.
+  const fromMagicLink = Boolean(presetEmail && presetToken);
 
   const onFinish = async ({ email, code, password, confirm }) => {
     setTopError(null);
@@ -120,13 +128,13 @@ export function ResetPasswordPage() {
     >
       <Shake trigger={shakeKey}>
         {topError && (
-          <Alert type="error" showIcon message={topError} className="!mb-4" />
+          <Alert type="error" showIcon title={topError} className="!mb-4" />
         )}
         {topNotice && (
           <Alert
             type="success"
             showIcon
-            message={topNotice}
+            title={topNotice}
             description={
               devOtp ? (
                 <span>
@@ -144,7 +152,7 @@ export function ResetPasswordPage() {
           <Alert
             type="info"
             showIcon
-            message="Dev mode"
+            title="Dev mode"
             description={
               <span>
                 Code:{" "}
@@ -163,40 +171,59 @@ export function ResetPasswordPage() {
           requiredMark={false}
           onFinish={onFinish}
           disabled={submitting}
-          initialValues={{ email: presetEmail }}
+          initialValues={{ email: presetEmail, code: presetToken }}
         >
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true, message: "Please enter your email" },
-              { type: "email", message: "Enter a valid email" },
-            ]}
-          >
-            <Input
-              size="large"
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </Form.Item>
+          {fromMagicLink ? (
+            <>
+              {/* Hidden field carriers — keep the values reachable via
+                  form.getFieldValue without showing extra inputs. */}
+              <Form.Item name="email" hidden>
+                <Input type="hidden" />
+              </Form.Item>
+              <Form.Item name="code" hidden>
+                <Input type="hidden" />
+              </Form.Item>
+              <p className="-mt-1 mb-4 text-sm text-fg-muted">
+                Resetting password for{" "}
+                <span className="font-semibold text-fg">{presetEmail}</span>.
+              </p>
+            </>
+          ) : (
+            <>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: "Please enter your email" },
+                  { type: "email", message: "Enter a valid email" },
+                ]}
+              >
+                <Input
+                  size="large"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                />
+              </Form.Item>
 
-          <Form.Item
-            name="code"
-            label="6-digit code"
-            rules={[
-              { required: true, message: "Enter the code from your email" },
-              { pattern: /^\d{6}$/, message: "Code must be 6 digits" },
-            ]}
-          >
-            <Input
-              size="large"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              placeholder="123456"
-              className="!font-mono !tracking-[0.5em] !text-center !text-lg"
-            />
-          </Form.Item>
+              <Form.Item
+                name="code"
+                label="6-digit code"
+                rules={[
+                  { required: true, message: "Enter the code from your email" },
+                  { pattern: /^\d{6}$/, message: "Code must be 6 digits" },
+                ]}
+              >
+                <Input
+                  size="large"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="123456"
+                  className="!font-mono !tracking-[0.5em] !text-center !text-lg"
+                />
+              </Form.Item>
+            </>
+          )}
 
           <Form.Item
             name="password"

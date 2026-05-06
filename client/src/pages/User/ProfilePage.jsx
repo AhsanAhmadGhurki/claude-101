@@ -9,6 +9,7 @@ import {
   Typography,
   Space,
   Tag,
+  App,
 } from "antd";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
@@ -36,6 +37,7 @@ function applyServerErrors(form, err, setTopError) {
 
 function ProfileForm() {
   const { user, refreshUser } = useAuth();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [topError, setTopError] = useState(null);
@@ -50,14 +52,19 @@ function ProfileForm() {
       const { user: updated } = await api.updateProfile(values);
       await refreshUser().catch(() => {});
       const emailChanged = updated.email !== user.email;
-      setSuccess(
-        emailChanged
-          ? "Profile updated. Check your new inbox to re-verify the address."
-          : "Profile updated."
-      );
+      const successMsg = emailChanged
+        ? "Profile updated. Check your new inbox to re-verify the address."
+        : "Profile updated.";
+      setSuccess(successMsg);
+      message.success(successMsg);
     } catch (err) {
       setShakeKey((k) => k + 1);
       applyServerErrors(form, err, setTopError);
+      message.error(
+        err instanceof ApiError && err.message
+          ? err.message
+          : "Couldn't save changes. Try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -66,10 +73,10 @@ function ProfileForm() {
   return (
     <Shake trigger={shakeKey}>
       {topError && (
-        <Alert type="error" showIcon message={topError} className="!mb-4" />
+        <Alert type="error" showIcon title={topError} className="!mb-4" />
       )}
       {success && (
-        <Alert type="success" showIcon message={success} className="!mb-4" />
+        <Alert type="success" showIcon title={success} className="!mb-4" />
       )}
       <Form
         form={form}
@@ -156,13 +163,13 @@ function PasswordForm() {
   return (
     <Shake trigger={shakeKey}>
       {topError && (
-        <Alert type="error" showIcon message={topError} className="!mb-4" />
+        <Alert type="error" showIcon title={topError} className="!mb-4" />
       )}
       {success && (
         <Alert
           type="success"
           showIcon
-          message="Password changed. Signing you out…"
+          title="Password changed. Signing you out…"
           className="!mb-4"
         />
       )}

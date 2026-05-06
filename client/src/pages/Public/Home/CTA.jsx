@@ -3,6 +3,7 @@ import { Button } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { useAuth } from "../../../store/auth/authContext";
 
 const stagger = {
   hidden: {},
@@ -31,6 +32,8 @@ const buttonPop = {
 
 export function CTA() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const firstName = user?.name?.trim().split(/\s+/)[0] ?? "";
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -42,7 +45,7 @@ export function CTA() {
   const cardRotate = useTransform(scrollYProgress, [0, 0.5], [2, 0]);
 
   return (
-    <section ref={ref} className="px-6 pb-24 sm:pb-28 max-w-7xl mx-auto">
+    <section ref={ref} className="relative px-6 pb-24 sm:pb-28 max-w-7xl mx-auto">
       <motion.div
         style={{ y: cardY, rotate: cardRotate }}
         initial={{ opacity: 0, y: 80, scale: 0.92, filter: "blur(10px)" }}
@@ -64,36 +67,59 @@ export function CTA() {
               variants={fadeUp}
               className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent mb-5"
             >
-              Ready when you are
+              {user ? "Welcome back" : "Ready when you are"}
             </motion.span>
             <motion.h2
               variants={fadeUp}
               className="text-4xl sm:text-5xl font-bold text-fg leading-tight tracking-tight"
             >
-              Your next adventure is{" "}
-              <motion.span
-                className="text-accent inline-block"
-                whileInView={{
-                  backgroundSize: ["0% 4px", "100% 4px"],
-                }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  backgroundImage: "linear-gradient(rgb(var(--accent)), rgb(var(--accent)))",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "0 100%",
-                  backgroundSize: "0% 4px",
-                }}
-              >
-                one prompt away.
-              </motion.span>
+              {user ? (
+                <>
+                  Welcome back{firstName ? `, ${firstName}` : ""}.{" "}
+                  <motion.span
+                    className="text-accent inline-block"
+                    whileInView={{ backgroundSize: ["0% 4px", "100% 4px"] }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(rgb(var(--accent)), rgb(var(--accent)))",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "0 100%",
+                      backgroundSize: "0% 4px",
+                    }}
+                  >
+                    Ready for your next adventure?
+                  </motion.span>
+                </>
+              ) : (
+                <>
+                  Your next adventure is{" "}
+                  <motion.span
+                    className="text-accent inline-block"
+                    whileInView={{ backgroundSize: ["0% 4px", "100% 4px"] }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(rgb(var(--accent)), rgb(var(--accent)))",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "0 100%",
+                      backgroundSize: "0% 4px",
+                    }}
+                  >
+                    one prompt away.
+                  </motion.span>
+                </>
+              )}
             </motion.h2>
             <motion.p
               variants={fadeUp}
               className="mt-5 text-fg-muted text-lg max-w-lg leading-relaxed"
             >
-              No accounts, no clutter. Type where you want to go and we'll
-              handle the rest.
+              {user
+                ? "Pick up where you left off, or start something new — your saved trips and dashboard are a click away."
+                : "No accounts, no clutter. Type where you want to go and we'll handle the rest."}
             </motion.p>
             <motion.div
               variants={fadeUp}
@@ -111,7 +137,7 @@ export function CTA() {
                   icon={<Icon icon="mdi:auto-fix" />}
                   className="!h-12 !px-7 !text-base !font-semibold"
                 >
-                  Build my trip
+                  {user ? "Plan a new trip" : "Build my trip"}
                 </Button>
               </motion.div>
               <motion.div
@@ -121,10 +147,15 @@ export function CTA() {
               >
                 <Button
                   size="large"
-                  onClick={() => navigate("/explore")}
+                  onClick={() => navigate(user ? "/saved-trips" : "/explore")}
+                  icon={
+                    user ? (
+                      <Icon icon="mdi:bookmark-outline" />
+                    ) : undefined
+                  }
                   className="!h-12 !px-7 !text-base !font-semibold"
                 >
-                  Explore routes
+                  {user ? "View saved trips" : "Explore routes"}
                 </Button>
               </motion.div>
             </motion.div>

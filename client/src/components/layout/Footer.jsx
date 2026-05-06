@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
-import { Input, Button, message } from "antd";
-import { motion } from "framer-motion";
+import { Input, Button } from "antd";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -39,22 +39,31 @@ const fadeUp = {
 export function Footer() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const handleSubscribe = async (e) => {
     e?.preventDefault();
+    setError(null);
+    setSuccess(false);
     if (!email.trim()) {
-      message.warning("Add your email first");
+      setError("Add your email first");
       return;
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      message.error("That doesn't look like a valid email");
+      setError("That doesn't look like a valid email");
       return;
     }
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setSubmitting(false);
-    setEmail("");
-    message.success("You're on the list. Trail notes coming soon.");
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      setEmail("");
+      setSuccess(true);
+    } catch {
+      setError("Something went wrong. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -121,13 +130,26 @@ export function Footer() {
           <p className="text-sm text-fg-muted mt-2 leading-relaxed">
             One short email a month — new destinations, route updates, and seasonal tips.
           </p>
-          <form onSubmit={handleSubscribe} className="mt-3 flex gap-2">
+          <form onSubmit={handleSubscribe} className="mt-3 flex gap-2" noValidate>
             <Input
               type="email"
               size="large"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (error) setError(null);
+                if (success) setSuccess(false);
+              }}
+              disabled={submitting}
+              aria-invalid={Boolean(error)}
+              aria-describedby={
+                error
+                  ? "newsletter-error"
+                  : success
+                  ? "newsletter-success"
+                  : undefined
+              }
               className="!bg-surface-2"
             />
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
@@ -136,16 +158,51 @@ export function Footer() {
                 size="large"
                 htmlType="submit"
                 loading={submitting}
-                icon={<Icon icon="mdi:send-outline" />}
+                disabled={submitting}
+                icon={!submitting && <Icon icon="mdi:send-outline" />}
                 className="!font-semibold"
               >
-                Subscribe
+                {submitting ? "Subscribing…" : "Subscribe"}
               </Button>
             </motion.div>
           </form>
-          <p className="text-[11px] text-fg-subtle mt-2">
-            We don't share your email. Unsubscribe anytime.
-          </p>
+          <AnimatePresence mode="wait" initial={false}>
+            {error ? (
+              <motion.p
+                key="error"
+                id="newsletter-error"
+                role="alert"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="text-xs text-red-400 mt-2 flex items-center gap-1.5"
+              >
+                <Icon icon="mdi:alert-circle-outline" className="text-sm" />
+                {error}
+              </motion.p>
+            ) : success ? (
+              <motion.p
+                key="success"
+                id="newsletter-success"
+                role="status"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5"
+              >
+                You're subscribed! ✓
+              </motion.p>
+            ) : (
+              <motion.p
+                key="hint"
+                className="text-[11px] text-fg-subtle mt-2"
+              >
+                We don't share your email. Unsubscribe anytime.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
 

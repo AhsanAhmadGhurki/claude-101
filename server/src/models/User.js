@@ -39,6 +39,8 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+
 userSchema.methods.toPublicJSON = function toPublicJSON() {
   return {
     id: this._id.toString(),

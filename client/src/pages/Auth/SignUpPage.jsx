@@ -18,11 +18,27 @@ export function SignUpPage() {
   // Watch password value so the strength meter updates live.
   const password = Form.useWatch("password", form) || "";
 
-  const onFinish = async (values) => {
+  const handleSubmit = async () => {
     setTopError(null);
+    // Explicitly validate every field (Antd equivalent of form.trigger())
+    // so empty/invalid fields surface inline errors on the first submit.
+    let values;
+    try {
+      values = await form.validateFields();
+    } catch (errInfo) {
+      // Scroll the first invalid field into view so the error message is
+      // visible even on short viewports.
+      if (errInfo?.errorFields?.length) {
+        form.scrollToField(errInfo.errorFields[0].name);
+      }
+      setShakeKey((k) => k + 1);
+      return;
+    }
     setSubmitting(true);
     try {
-      await signup(values);
+      // Drop confirmPassword before sending — backend doesn't need it.
+      const { confirmPassword: _omit, ...payload } = values;
+      await signup(payload);
       // After signup the user is signed in but unverified — send them to a
       // page that explains "check your inbox" and offers a resend option.
       navigate("/verify-email", {
@@ -65,14 +81,18 @@ export function SignUpPage() {
     >
       <Shake trigger={shakeKey}>
         {topError && (
-          <Alert type="error" message={topError} showIcon className="!mb-4" />
+          <Alert type="error" title={topError} showIcon className="!mb-4" />
         )}
 
         <Form
           form={form}
           layout="vertical"
           requiredMark={false}
-          onFinish={onFinish}
+          onFinish={handleSubmit}
+          onFinishFailed={() => setShakeKey((k) => k + 1)}
+          // Errors only appear once the user explicitly submits, instead
+          // of yelling at them while they're mid-typing.
+          validateTrigger="onSubmit"
           disabled={submitting}
           autoComplete="on"
         >
@@ -115,7 +135,40 @@ export function SignUpPage() {
                     : Promise.reject(new Error("Choose a stronger password")),
               },
             ]}
-            extra={<PasswordStrengthMeter password={password} />}
+            extra={
+              <>
+                <PasswordStrengthMeter password={password} />
+                <div className="mt-1 text-xs text-fg-muted">
+                  Use at least 8 characters, including a letter and a number.
+                  Avoid common words and re-used passwords.
+                </div>
+              </>
+            }
+          >
+            <Input.Password
+              size="large"
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm password"
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "Please confirm your password" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Passwords do not match")
+                  );
+                },
+              }),
+            ]}
           >
             <Input.Password
               size="large"
