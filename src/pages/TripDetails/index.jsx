@@ -4,7 +4,7 @@ import { Button, message } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { WikiImage } from "../../components/ui/WikiImage";
-import { toWikiQuery } from "../../lib/utils/toWikiQuery";
+import { toWikiQuery } from "../../../client/src/lib/utils/toWikiQuery";
 
 function pickDayQueries(day, destination) {
   const queries = [];

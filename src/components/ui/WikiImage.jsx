@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useResolvedImage } from "../../hooks/useResolvedImage";
-import { pickCategoryIcon } from "../../lib/utils/pickCategoryIcon";
-import { pickFallbackImage } from "../../lib/utils/fallbackImage";
-import { optimizeImageUrl, buildSrcSet } from "../../lib/utils/imageUrl";
+import { pickCategoryIcon } from "../../../client/src/lib/utils/pickCategoryIcon";
+import { pickFallbackImage } from "../../../client/src/lib/utils/fallbackImage";
+import { optimizeImageUrl, buildSrcSet } from "../../../client/src/lib/utils/imageUrl";
 
 export function WikiImage({
   query,
