@@ -1,4 +1,4 @@
-import destinations from "../../mocks/destinations.json";
+import destinations from "../../../client/src/mocks/destinations.json";
 
 const STYLE_BUDGET = {
   relaxed: { activitiesPerDay: 2, includeMeal: true, includeRest: true },

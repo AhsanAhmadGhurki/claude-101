@@ -4,7 +4,7 @@ import { Input, Slider, Button } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTripPlanner } from "../../hooks/useTripPlanner";
-import destinations from "../../mocks/destinations.json";
+import destinations from "../../../client/src/mocks/destinations.json";
 
 function extractDaysFromPrompt(text) {
   if (!text) return null;
