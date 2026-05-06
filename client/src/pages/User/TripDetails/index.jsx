@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Button, Modal, message } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -38,14 +38,37 @@ function pickDayLabel(day) {
   return day.title || day.activities?.[0] || "";
 }
 
-function readStoredTrip() {
-  const stored = sessionStorage.getItem("lastTrip");
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return null;
+// Resolve a trip from the URL :id. Tries, in order:
+//   1. localStorage["trip:<id>"]   — set by TripBuilder on confirm.
+//   2. savedTrips array scan        — Open from /saved-trips passes savedId.
+//   3. sessionStorage["lastTrip"]   — legacy fallback for old /trip/current
+//      URLs and same-tab continuity if the localStorage entry was evicted.
+// Returns null if nothing matches; the page then redirects to /builder.
+function loadTripById(id) {
+  if (id) {
+    try {
+      const direct = localStorage.getItem(`trip:${id}`);
+      if (direct) return JSON.parse(direct);
+    } catch {
+      // Corrupt entry — fall through to next source.
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem("savedTrips") || "[]");
+      if (Array.isArray(saved)) {
+        const match = saved.find((t) => t?.savedId === id || t?.tripId === id);
+        if (match) return match;
+      }
+    } catch {
+      // ignore parse error
+    }
   }
+  try {
+    const session = sessionStorage.getItem("lastTrip");
+    if (session) return JSON.parse(session);
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 // Identity used to dedupe saves — the same trip shouldn't appear twice in
@@ -77,14 +100,15 @@ function makeSavedId() {
 export function TripDetailsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id: routeId } = useParams();
   const { user } = useAuth();
-  const [trip] = useState(readStoredTrip);
+  const [trip] = useState(() => loadTripById(routeId));
   const [activeDay, setActiveDay] = useState(1);
   // Reflects whether this trip is currently in localStorage["savedTrips"].
   // Initialized from storage on mount so the bookmark icon is correct even
   // when revisiting a previously-saved trip.
   const [saved, setSaved] = useState(() => {
-    const t = readStoredTrip();
+    const t = loadTripById(routeId);
     if (!t) return false;
     const id = tripIdentity(t);
     return readSavedTrips().some((s) => tripIdentity(s) === id);

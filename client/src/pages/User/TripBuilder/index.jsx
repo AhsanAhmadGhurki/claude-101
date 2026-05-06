@@ -106,8 +106,22 @@ export function TripBuilderPage() {
 
   const handleConfirm = () => {
     if (!trip || trip.unresolved) return;
-    sessionStorage.setItem("lastTrip", JSON.stringify(trip));
-    navigate("/trip/current");
+    // Generate a stable per-trip UUID so the URL is shareable: the recipient
+    // hitting /trip/<uuid> can read this exact trip from localStorage rather
+    // than getting whatever happens to be in their sessionStorage.lastTrip.
+    const tripId =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const tripWithId = { ...trip, tripId };
+    try {
+      localStorage.setItem(`trip:${tripId}`, JSON.stringify(tripWithId));
+    } catch {
+      // Quota or disabled storage — fall through; TripDetails has a
+      // sessionStorage fallback so we still want to write that.
+    }
+    sessionStorage.setItem("lastTrip", JSON.stringify(tripWithId));
+    navigate(`/trip/${tripId}`);
   };
 
   const handleAnswer = (key, value) => {
