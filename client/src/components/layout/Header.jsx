@@ -65,25 +65,42 @@ export function Header() {
     }
   };
 
+  // Top-level menu.onClick with key dispatch is Antd's canonical and most
+  // reliable pattern. Per-item onClick handlers can silently no-op in some
+  // Antd versions when the menu is rendered via Dropdown's `menu` prop,
+  // which is what was breaking the Dashboard item.
   const userMenu = {
+    onClick: ({ key }) => {
+      switch (key) {
+        case "dashboard":
+          navigate("/dashboard");
+          break;
+        case "saved-trips":
+          navigate("/saved-trips");
+          break;
+        case "profile":
+          navigate("/profile");
+          break;
+        case "signout":
+          requestSignout();
+          break;
+      }
+    },
     items: [
       {
         key: "dashboard",
         label: "Dashboard",
         icon: <Icon icon="mdi:view-dashboard-outline" />,
-        onClick: () => navigate("/dashboard"),
       },
       {
         key: "saved-trips",
         label: "Saved trips",
         icon: <Icon icon="mdi:bookmark-outline" />,
-        onClick: () => navigate("/saved-trips"),
       },
       {
         key: "profile",
         label: "Profile",
         icon: <Icon icon="mdi:account-cog-outline" />,
-        onClick: () => navigate("/profile"),
       },
       { type: "divider" },
       {
@@ -91,7 +108,6 @@ export function Header() {
         label: "Sign out",
         icon: <Icon icon="mdi:logout" />,
         danger: true,
-        onClick: requestSignout,
       },
     ],
   };
