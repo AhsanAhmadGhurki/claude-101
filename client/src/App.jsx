@@ -20,6 +20,7 @@ import { ResetPasswordPage } from "./pages/Auth/ResetPasswordPage";
 import { VerifyEmailPage } from "./pages/Auth/VerifyEmailPage";
 import { ProfilePage } from "./pages/User/ProfilePage";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { RedirectIfAuthed } from "./components/auth/RedirectIfAuthed";
 import "./index.css";
 
 const pageVariants = {
@@ -68,10 +69,10 @@ function App() {
           <Route path="/resources/best-time" element={<AnimatedPage><BestTimePage /></AnimatedPage>} />
           <Route path="/resources/packing" element={<AnimatedPage><PackingPage /></AnimatedPage>} />
           <Route path="/resources/safety" element={<AnimatedPage><SafetyPage /></AnimatedPage>} />
-          <Route path="/signin" element={<AnimatedPage><SignInPage /></AnimatedPage>} />
-          <Route path="/signup" element={<AnimatedPage><SignUpPage /></AnimatedPage>} />
-          <Route path="/forgot-password" element={<AnimatedPage><ForgotPasswordPage /></AnimatedPage>} />
-          <Route path="/reset-password" element={<AnimatedPage><ResetPasswordPage /></AnimatedPage>} />
+          <Route path="/signin" element={<AnimatedPage><RedirectIfAuthed><SignInPage /></RedirectIfAuthed></AnimatedPage>} />
+          <Route path="/signup" element={<AnimatedPage><RedirectIfAuthed><SignUpPage /></RedirectIfAuthed></AnimatedPage>} />
+          <Route path="/forgot-password" element={<AnimatedPage><RedirectIfAuthed><ForgotPasswordPage /></RedirectIfAuthed></AnimatedPage>} />
+          <Route path="/reset-password" element={<AnimatedPage><RedirectIfAuthed><ResetPasswordPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
           <Route
             path="/dashboard"
