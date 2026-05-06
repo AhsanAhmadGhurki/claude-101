@@ -45,19 +45,24 @@ export function Header() {
   const [prevPath, setPrevPath] = useState(location.pathname);
   const menuRef = useRef(null);
   const { user, signout } = useAuth();
+  // Controlled signout modal — replaces Modal.confirm so the actual signout
+  // can only run from an explicit OK click. The dropdown menu item just
+  // requests the modal; even if a stray keyboard event activates the item,
+  // signout never fires without a deliberate confirmation.
+  const [signoutModalOpen, setSignoutModalOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const confirmSignout = () => {
-    Modal.confirm({
-      title: "Sign out?",
-      content: "You'll need to enter your credentials to sign back in.",
-      okText: "Sign out",
-      cancelText: "Stay signed in",
-      okButtonProps: { danger: true },
-      onOk: async () => {
-        await signout();
-        navigate("/", { replace: true });
-      },
-    });
+  const requestSignout = () => setSignoutModalOpen(true);
+
+  const performSignout = async () => {
+    setSigningOut(true);
+    try {
+      await signout();
+      setSignoutModalOpen(false);
+      navigate("/", { replace: true });
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const userMenu = {
@@ -80,7 +85,7 @@ export function Header() {
         label: "Sign out",
         icon: <Icon icon="mdi:logout" />,
         danger: true,
-        onClick: confirmSignout,
+        onClick: requestSignout,
       },
     ],
   };
@@ -270,7 +275,7 @@ export function Header() {
                     type="button"
                     onClick={() => {
                       setMenuOpen(false);
-                      confirmSignout();
+                      requestSignout();
                     }}
                     className="text-left block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
                   >
@@ -299,6 +304,20 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Modal
+        open={signoutModalOpen}
+        title="Sign out?"
+        onOk={performSignout}
+        onCancel={() => setSignoutModalOpen(false)}
+        okText="Sign out"
+        cancelText="Stay signed in"
+        okButtonProps={{ danger: true, loading: signingOut }}
+        cancelButtonProps={{ disabled: signingOut }}
+        maskClosable={!signingOut}
+      >
+        You'll need to enter your credentials to sign back in.
+      </Modal>
     </motion.header>
   );
 }

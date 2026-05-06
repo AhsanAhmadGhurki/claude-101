@@ -24,6 +24,9 @@ export function DashboardPage() {
   const [welcome, setWelcome] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Controlled signout modal (mirrors Header) — see Header.jsx for the
+  // reasoning behind avoiding Modal.confirm here.
+  const [signoutModalOpen, setSignoutModalOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
@@ -43,19 +46,17 @@ export function DashboardPage() {
     };
   }, []);
 
-  const confirmSignout = () => {
-    Modal.confirm({
-      title: "Sign out?",
-      content: "You'll need to enter your credentials to sign back in.",
-      okText: "Sign out",
-      cancelText: "Stay signed in",
-      okButtonProps: { danger: true, loading: signingOut },
-      onOk: async () => {
-        setSigningOut(true);
-        await signout();
-        navigate("/", { replace: true });
-      },
-    });
+  const requestSignout = () => setSignoutModalOpen(true);
+
+  const performSignout = async () => {
+    setSigningOut(true);
+    try {
+      await signout();
+      setSignoutModalOpen(false);
+      navigate("/", { replace: true });
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const initial = user?.name?.[0]?.toUpperCase() || "?";
@@ -142,7 +143,7 @@ export function DashboardPage() {
             <Button
               size="large"
               danger
-              onClick={confirmSignout}
+              onClick={requestSignout}
               icon={<Icon icon="mdi:logout" />}
             >
               Sign out
@@ -150,6 +151,20 @@ export function DashboardPage() {
           </Space>
         </Card>
       </motion.div>
+
+      <Modal
+        open={signoutModalOpen}
+        title="Sign out?"
+        onOk={performSignout}
+        onCancel={() => setSignoutModalOpen(false)}
+        okText="Sign out"
+        cancelText="Stay signed in"
+        okButtonProps={{ danger: true, loading: signingOut }}
+        cancelButtonProps={{ disabled: signingOut }}
+        maskClosable={!signingOut}
+      >
+        You'll need to enter your credentials to sign back in.
+      </Modal>
     </section>
   );
 }
