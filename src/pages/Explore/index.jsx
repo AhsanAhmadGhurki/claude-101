@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CATEGORIES, DESTINATIONS } from "../../data/destinations";
+import { CATEGORIES, DESTINATIONS } from "../../../client/src/data/destinations";
 import { DestinationImage } from "../../components/ui/DestinationImage";
 
 export function ExplorePage() {

@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { DestinationImage } from "../../components/ui/DestinationImage";
-import { DESTINATIONS } from "../../data/destinations";
+import { DESTINATIONS } from "../../../client/src/data/destinations";
 
 const SKARDU = DESTINATIONS.find((d) => d.id === "skardu");
 
