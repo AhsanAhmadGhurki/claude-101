@@ -1,8 +1,8 @@
 import {
   createUser,
   authenticate,
-  verifyEmailToken,
-  resendVerification,
+  verifyEmailOtp,
+  requestVerificationOtp,
   startPasswordReset,
   completePasswordReset,
 } from "../services/userService.js";
@@ -14,6 +14,13 @@ import {
 import { COOKIE_NAMES } from "../utils/cookies.js";
 import { isProd } from "../config/env.js";
 
+// Surface the OTP code in dev-mode responses so a developer can complete the
+// flow without configuring SMTP. Stripped from prod responses entirely.
+function devOtp(emailResult) {
+  if (isProd || !emailResult?.code) return {};
+  return { devOtp: emailResult.code };
+}
+
 export async function signup(req, res, next) {
   try {
     const { name, email, password } = req.body || {};
@@ -22,9 +29,7 @@ export async function signup(req, res, next) {
 
     res.status(201).json({
       user: user.toPublicJSON(),
-      // In dev only, surface the verify link so the user can click through
-      // without configuring SMTP.
-      ...(emailResult?.link && !isProd ? { verifyLink: emailResult.link } : {}),
+      ...devOtp(emailResult),
     });
   } catch (err) {
     next(err);
@@ -62,47 +67,47 @@ export async function signout(req, res, next) {
   }
 }
 
+// Verify a 6-digit email-verification OTP. Body: { email, code }.
 export async function verifyEmail(req, res, next) {
   try {
-    const token = req.body?.token || req.query?.token;
-    const user = await verifyEmailToken(token);
+    const { email, code } = req.body || {};
+    const user = await verifyEmailOtp({ email, code });
     res.json({ ok: true, user: user.toPublicJSON() });
   } catch (err) {
     next(err);
   }
 }
 
+// Request (or re-issue) a verification OTP for the given email. Always 200 —
+// never reveal whether the email exists or is already verified.
 export async function requestVerifyEmail(req, res, next) {
   try {
     const { email } = req.body || {};
-    const result = await resendVerification(email);
-    res.json({
-      ok: true,
-      ...(result?.link && !isProd ? { verifyLink: result.link } : {}),
-    });
+    const result = await requestVerificationOtp(email);
+    res.json({ ok: true, ...devOtp(result) });
   } catch (err) {
     next(err);
   }
 }
 
+// Issue a password-reset OTP. Always 200 — same enumeration-prevention
+// posture as verify-email.
 export async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body || {};
     const result = await startPasswordReset(email);
-    // Always 200 — never leak whether the email exists.
-    res.json({
-      ok: true,
-      ...(result?.link && !isProd ? { resetLink: result.link } : {}),
-    });
+    res.json({ ok: true, ...devOtp(result) });
   } catch (err) {
     next(err);
   }
 }
 
+// Consume a password-reset OTP and apply the new password.
+// Body: { email, code, password }.
 export async function resetPassword(req, res, next) {
   try {
-    const { token, password } = req.body || {};
-    await completePasswordReset({ token, password });
+    const { email, code, password } = req.body || {};
+    await completePasswordReset({ email, code, password });
     res.json({ ok: true });
   } catch (err) {
     next(err);

@@ -1,17 +1,16 @@
 import validator from "validator";
 import { User } from "../models/User.js";
 import { ApiError } from "../utils/ApiError.js";
-import { hashPassword, verifyPassword, validatePasswordStrength } from "../utils/password.js";
-import { randomToken, sha256 } from "../utils/cryptoTokens.js";
-import { revokeAllSessions } from "./authService.js";
 import {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} from "./emailService.js";
+  hashPassword,
+  verifyPassword,
+  validatePasswordStrength,
+} from "../utils/password.js";
+import { revokeAllSessions } from "./authService.js";
+import { issueOtp, consumeOtp } from "./otpService.js";
+import { OTP_PURPOSES } from "../models/Otp.js";
+import { sendOtpEmail } from "./emailService.js";
 import { env } from "../config/env.js";
-
-const VERIFY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const RESET_TTL_MS = 15 * 60 * 1000; // 15m
 
 function validateSignupInput({ name, email, password }) {
   const details = {};
@@ -26,13 +25,17 @@ function validateSignupInput({ name, email, password }) {
   return details;
 }
 
+function normalizeEmail(email) {
+  return String(email ?? "").toLowerCase().trim();
+}
+
 export async function createUser({ name, email, password }) {
   const details = validateSignupInput({ name, email, password });
   if (Object.keys(details).length) {
     throw new ApiError(400, "Validation failed", { details });
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedEmail = normalizeEmail(email);
   if (await User.findOne({ email: normalizedEmail })) {
     throw new ApiError(409, "Email already in use", {
       details: { email: "Email already in use" },
@@ -46,14 +49,10 @@ export async function createUser({ name, email, password }) {
     passwordHash,
   });
 
-  // Generate a verification token and email it. The link contains the raw
-  // token; we only persist its hash.
-  const rawToken = randomToken(32);
-  user.verificationTokenHash = sha256(rawToken);
-  user.verificationExpiresAt = new Date(Date.now() + VERIFY_TTL_MS);
-  await user.save();
-
-  const emailResult = await sendVerificationEmail(user, rawToken);
+  // Issue + dispatch the email-verification OTP. emailResult.code is only
+  // populated in dev — production never sees it.
+  const { code } = await issueOtp({ user, purpose: OTP_PURPOSES.EMAIL_VERIFICATION });
+  const emailResult = await sendOtpEmail(user, code, OTP_PURPOSES.EMAIL_VERIFICATION);
 
   return { user, emailResult };
 }
@@ -63,7 +62,7 @@ export async function authenticate({ email, password }) {
     throw new ApiError(400, "Email and password are required");
   }
 
-  const user = await User.findOne({ email: String(email).toLowerCase() }).select(
+  const user = await User.findOne({ email: normalizeEmail(email) }).select(
     "+passwordHash"
   );
 
@@ -84,67 +83,78 @@ export async function authenticate({ email, password }) {
   return user;
 }
 
-export async function verifyEmailToken(rawToken) {
-  if (!rawToken || typeof rawToken !== "string") {
-    throw new ApiError(400, "Invalid verification link");
-  }
-  const tokenHash = sha256(rawToken);
-  const user = await User.findOne({ verificationTokenHash: tokenHash }).select(
-    "+verificationTokenHash +verificationExpiresAt"
-  );
-  if (!user || !user.verificationExpiresAt || user.verificationExpiresAt < new Date()) {
-    throw new ApiError(400, "Verification link is invalid or expired");
+// Verify a 6-digit email OTP. The user is identified by the email in the
+// payload, not by a pre-existing session — verification can happen from any
+// browser/device.
+export async function verifyEmailOtp({ email, code }) {
+  const user = await User.findOne({ email: normalizeEmail(email) });
+  // Generic error so we don't reveal whether the email exists. consumeOtp
+  // would also throw OTP_NONE here, but we want a single shape.
+  if (!user) {
+    throw new ApiError(400, "Incorrect code or email.", { code: "OTP_INCORRECT" });
   }
 
-  user.isVerified = true;
-  user.verificationTokenHash = undefined;
-  user.verificationExpiresAt = undefined;
-  await user.save();
+  await consumeOtp({
+    user,
+    purpose: OTP_PURPOSES.EMAIL_VERIFICATION,
+    code,
+  });
+
+  if (!user.isVerified) {
+    user.isVerified = true;
+    await user.save();
+  }
   return user;
 }
 
-export async function resendVerification(email) {
-  // Always 200 from the controller — never reveal whether email exists.
-  const user = await User.findOne({ email: String(email).toLowerCase() });
+// Re-issue a verification OTP. Always responds 200 from the controller (no
+// account enumeration), so we silently no-op for unknown / already-verified
+// users.
+export async function requestVerificationOtp(email) {
+  const user = await User.findOne({ email: normalizeEmail(email) });
   if (!user || user.isVerified) return { sent: false };
 
-  const rawToken = randomToken(32);
-  user.verificationTokenHash = sha256(rawToken);
-  user.verificationExpiresAt = new Date(Date.now() + VERIFY_TTL_MS);
-  await user.save();
-  return sendVerificationEmail(user, rawToken);
+  const { code } = await issueOtp({ user, purpose: OTP_PURPOSES.EMAIL_VERIFICATION });
+  return sendOtpEmail(user, code, OTP_PURPOSES.EMAIL_VERIFICATION);
 }
 
+// Issue a password-reset OTP. Like verification: silent no-op for unknown
+// emails so we don't leak account existence.
 export async function startPasswordReset(email) {
-  const user = await User.findOne({ email: String(email || "").toLowerCase() });
-  // Don't tell the caller — silent no-op if user doesn't exist.
+  const user = await User.findOne({ email: normalizeEmail(email) });
   if (!user) return { sent: false };
 
-  const rawToken = randomToken(32);
-  user.resetTokenHash = sha256(rawToken);
-  user.resetExpiresAt = new Date(Date.now() + RESET_TTL_MS);
-  await user.save();
-  return sendPasswordResetEmail(user, rawToken);
+  const { code } = await issueOtp({ user, purpose: OTP_PURPOSES.PASSWORD_RESET });
+  return sendOtpEmail(user, code, OTP_PURPOSES.PASSWORD_RESET);
 }
 
-export async function completePasswordReset({ token, password }) {
+// Consume a password-reset OTP and apply the new password. All sessions are
+// revoked server-side so any other device with an old refresh token is
+// kicked.
+export async function completePasswordReset({ email, code, password }) {
   const pwErr = validatePasswordStrength(password);
-  if (pwErr) throw new ApiError(400, "Validation failed", { details: { password: pwErr } });
-
-  if (!token) throw new ApiError(400, "Reset link is invalid");
-  const user = await User.findOne({ resetTokenHash: sha256(token) }).select(
-    "+resetTokenHash +resetExpiresAt"
-  );
-  if (!user || !user.resetExpiresAt || user.resetExpiresAt < new Date()) {
-    throw new ApiError(400, "Reset link is invalid or expired");
+  if (pwErr) {
+    throw new ApiError(400, "Validation failed", {
+      details: { password: pwErr },
+    });
   }
 
+  const user = await User.findOne({ email: normalizeEmail(email) }).select(
+    "+passwordHash"
+  );
+  if (!user) {
+    throw new ApiError(400, "Incorrect code or email.", { code: "OTP_INCORRECT" });
+  }
+
+  await consumeOtp({
+    user,
+    purpose: OTP_PURPOSES.PASSWORD_RESET,
+    code,
+  });
+
   user.passwordHash = await hashPassword(password);
-  user.resetTokenHash = undefined;
-  user.resetExpiresAt = undefined;
   user.passwordChangedAt = new Date();
   await user.save();
-
   await revokeAllSessions(user._id);
   return user;
 }
@@ -157,20 +167,22 @@ export async function updateProfile(user, { name, email }) {
     else user.name = trimmed;
   }
   if (email != null) {
-    const normalized = String(email).toLowerCase().trim();
+    const normalized = normalizeEmail(email);
     if (!validator.isEmail(normalized)) {
       details.email = "Enter a valid email address";
     } else if (normalized !== user.email) {
       const taken = await User.findOne({ email: normalized });
-      if (taken) details.email = "Email already in use";
-      else {
+      if (taken) {
+        details.email = "Email already in use";
+      } else {
         user.email = normalized;
-        // Email changed → re-verify, send a fresh link.
+        // Email changed → require re-verification with a fresh OTP.
         user.isVerified = false;
-        const rawToken = randomToken(32);
-        user.verificationTokenHash = sha256(rawToken);
-        user.verificationExpiresAt = new Date(Date.now() + VERIFY_TTL_MS);
-        await sendVerificationEmail(user, rawToken);
+        const { code } = await issueOtp({
+          user,
+          purpose: OTP_PURPOSES.EMAIL_VERIFICATION,
+        });
+        await sendOtpEmail(user, code, OTP_PURPOSES.EMAIL_VERIFICATION);
       }
     }
   }

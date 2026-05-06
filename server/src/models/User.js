@@ -27,14 +27,10 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
-    // Email verification
+    // Email verification — boolean flag flipped when an email_verification
+    // OTP is consumed. The OTP itself lives in the Otp collection (with TTL),
+    // not on the User document.
     isVerified: { type: Boolean, default: false },
-    verificationTokenHash: { type: String, select: false },
-    verificationExpiresAt: { type: Date, select: false },
-
-    // Password reset
-    resetTokenHash: { type: String, select: false },
-    resetExpiresAt: { type: Date, select: false },
 
     // Bumped on password changes — used to invalidate old access tokens
     // server-side without a per-token blocklist.
