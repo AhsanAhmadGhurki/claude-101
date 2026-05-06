@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button, message } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { WikiImage } from "../../../client/src/components/ui/WikiImage";
-import { toWikiQuery } from "../../../client/src/lib/utils/toWikiQuery";
+import { WikiImage } from "../../../components/ui/WikiImage";
+import { toWikiQuery } from "../../../lib/utils/toWikiQuery";
 
 function pickDayQueries(day, destination) {
   const queries = [];

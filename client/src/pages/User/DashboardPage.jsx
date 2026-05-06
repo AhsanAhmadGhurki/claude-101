@@ -13,8 +13,8 @@ import {
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../client/src/store/auth/authContext";
-import { api } from "../../../client/src/api/client";
+import { useAuth } from "../../store/auth/authContext";
+import { api } from "../../api/client";
 
 const { Title, Text } = Typography;
 
