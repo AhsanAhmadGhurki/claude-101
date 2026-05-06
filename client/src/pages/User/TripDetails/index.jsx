@@ -78,7 +78,17 @@ export function TripDetailsPage() {
 
   const handleSave = () => {
     const stored = JSON.parse(localStorage.getItem("savedTrips") || "[]");
-    stored.unshift(trip);
+    // Tag with savedAt/savedId so the Saved Trips page can render dates and
+    // delete by stable id rather than list index.
+    const stamped = {
+      ...trip,
+      savedAt: Date.now(),
+      savedId:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
+    };
+    stored.unshift(stamped);
     localStorage.setItem("savedTrips", JSON.stringify(stored.slice(0, 20)));
     setSaved(true);
     message.success({ content: "Trip saved!", duration: 2 });

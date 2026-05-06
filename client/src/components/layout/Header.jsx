@@ -74,6 +74,12 @@ export function Header() {
         onClick: () => navigate("/dashboard"),
       },
       {
+        key: "saved-trips",
+        label: "Saved trips",
+        icon: <Icon icon="mdi:bookmark-outline" />,
+        onClick: () => navigate("/saved-trips"),
+      },
+      {
         key: "profile",
         label: "Profile",
         icon: <Icon icon="mdi:account-cog-outline" />,
@@ -263,6 +269,13 @@ export function Header() {
                     className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
                   >
                     Dashboard
+                  </NavLink>
+                  <NavLink
+                    to="/saved-trips"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                  >
+                    Saved trips
                   </NavLink>
                   <NavLink
                     to="/profile"

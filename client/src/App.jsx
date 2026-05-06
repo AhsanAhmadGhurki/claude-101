@@ -19,6 +19,7 @@ import { ForgotPasswordPage } from "./pages/Auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/Auth/ResetPasswordPage";
 import { VerifyEmailPage } from "./pages/Auth/VerifyEmailPage";
 import { ProfilePage } from "./pages/User/ProfilePage";
+import { SavedTripsPage } from "./pages/User/SavedTrips";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RedirectIfAuthed } from "./components/auth/RedirectIfAuthed";
 import "./index.css";
@@ -90,6 +91,16 @@ function App() {
               <AnimatedPage>
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              </AnimatedPage>
+            }
+          />
+          <Route
+            path="/saved-trips"
+            element={
+              <AnimatedPage>
+                <ProtectedRoute>
+                  <SavedTripsPage />
                 </ProtectedRoute>
               </AnimatedPage>
             }
