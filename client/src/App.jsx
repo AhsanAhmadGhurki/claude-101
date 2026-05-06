@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageShell } from "./components/layout/PageShell";
 import { HomePage } from "./pages/Public/Home";
@@ -20,6 +20,7 @@ import { ResetPasswordPage } from "./pages/Auth/ResetPasswordPage";
 import { VerifyEmailPage } from "./pages/Auth/VerifyEmailPage";
 import { ProfilePage } from "./pages/User/ProfilePage";
 import { SavedTripsPage } from "./pages/User/SavedTrips";
+import { NotFoundPage } from "./pages/Public/NotFound";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RedirectIfAuthed } from "./components/auth/RedirectIfAuthed";
 import "./index.css";
@@ -70,6 +71,8 @@ function App() {
           <Route path="/resources/best-time" element={<AnimatedPage><BestTimePage /></AnimatedPage>} />
           <Route path="/resources/packing" element={<AnimatedPage><PackingPage /></AnimatedPage>} />
           <Route path="/resources/safety" element={<AnimatedPage><SafetyPage /></AnimatedPage>} />
+          {/* Common alias — some auth flows / inbound links use /login. */}
+          <Route path="/login" element={<Navigate to="/signin" replace />} />
           <Route path="/signin" element={<AnimatedPage><RedirectIfAuthed><SignInPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/signup" element={<AnimatedPage><RedirectIfAuthed><SignUpPage /></RedirectIfAuthed></AnimatedPage>} />
           <Route path="/forgot-password" element={<AnimatedPage><RedirectIfAuthed><ForgotPasswordPage /></RedirectIfAuthed></AnimatedPage>} />
@@ -105,6 +108,8 @@ function App() {
               </AnimatedPage>
             }
           />
+          {/* Catch-all 404 — must stay last so it doesn't shadow real routes. */}
+          <Route path="*" element={<AnimatedPage><NotFoundPage /></AnimatedPage>} />
         </Routes>
       </AnimatePresence>
     </PageShell>
