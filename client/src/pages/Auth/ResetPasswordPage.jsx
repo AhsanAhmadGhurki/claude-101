@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { api, ApiError } from "../../../client/src/api/client";
+import { api, ApiError } from "../../api/client";
 import { AuthShell } from "./AuthShell";
-import { PasswordStrengthMeter } from "../../../client/src/components/ui/PasswordStrengthMeter";
-import { Shake } from "../../../client/src/components/ui/Shake";
-import { SuccessCheck } from "../../../client/src/components/ui/SuccessCheck";
-import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
+import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
+import { Shake } from "../../components/ui/Shake";
+import { SuccessCheck } from "../../components/ui/SuccessCheck";
+import { scorePassword } from "../../services/auth/passwordStrength";
 
 export function ResetPasswordPage() {
   const [params] = useSearchParams();

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../client/src/store/auth/authContext";
-import { ApiError } from "../../../client/src/api/client";
+import { useAuth } from "../../store/auth/authContext";
+import { ApiError } from "../../api/client";
 import { AuthShell } from "./AuthShell";
-import { PasswordStrengthMeter } from "../../../client/src/components/ui/PasswordStrengthMeter";
-import { Shake } from "../../../client/src/components/ui/Shake";
-import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
+import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
+import { Shake } from "../../components/ui/Shake";
+import { scorePassword } from "../../services/auth/passwordStrength";
 
 export function SignUpPage() {
   const { signup } = useAuth();

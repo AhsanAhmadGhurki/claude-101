@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button, Alert, Spin, Input, Form } from "antd";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
-import { api, ApiError } from "../../../client/src/api/client";
-import { useAuth } from "../../../client/src/store/auth/authContext";
+import { api, ApiError } from "../../api/client";
+import { useAuth } from "../../store/auth/authContext";
 import { AuthShell } from "./AuthShell";
-import { SuccessCheck } from "../../../client/src/components/ui/SuccessCheck";
+import { SuccessCheck } from "../../components/ui/SuccessCheck";
 
 // Two modes:
 //  - With ?token=...  → automatically verify (the email link path).
