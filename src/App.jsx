@@ -12,6 +12,14 @@ import { VisaPage } from "./pages/info/Visa";
 import { BestTimePage } from "./pages/info/BestTime";
 import { PackingPage } from "./pages/info/Packing";
 import { SafetyPage } from "./pages/info/Safety";
+import { SignInPage } from "./pages/auth/SignInPage";
+import { SignUpPage } from "./pages/auth/SignUpPage";
+import { DashboardPage } from "./pages/auth/DashboardPage";
+import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
+import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
+import { ProfilePage } from "./pages/auth/ProfilePage";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
 import "./index.css";
 
 const pageVariants = {
@@ -60,6 +68,31 @@ function App() {
           <Route path="/resources/best-time" element={<AnimatedPage><BestTimePage /></AnimatedPage>} />
           <Route path="/resources/packing" element={<AnimatedPage><PackingPage /></AnimatedPage>} />
           <Route path="/resources/safety" element={<AnimatedPage><SafetyPage /></AnimatedPage>} />
+          <Route path="/signin" element={<AnimatedPage><SignInPage /></AnimatedPage>} />
+          <Route path="/signup" element={<AnimatedPage><SignUpPage /></AnimatedPage>} />
+          <Route path="/forgot-password" element={<AnimatedPage><ForgotPasswordPage /></AnimatedPage>} />
+          <Route path="/reset-password" element={<AnimatedPage><ResetPasswordPage /></AnimatedPage>} />
+          <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
+          <Route
+            path="/dashboard"
+            element={
+              <AnimatedPage>
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              </AnimatedPage>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <AnimatedPage>
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              </AnimatedPage>
+            }
+          />
         </Routes>
       </AnimatePresence>
     </PageShell>

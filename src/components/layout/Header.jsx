@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "antd";
+import { Button, Dropdown, Avatar, Modal } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import { useAuth } from "../../auth/authContext";
 
 const linkClass = ({ isActive }) =>
   `relative text-sm font-medium transition ${
@@ -43,6 +44,46 @@ export function Header() {
   const location = useLocation();
   const [prevPath, setPrevPath] = useState(location.pathname);
   const menuRef = useRef(null);
+  const { user, signout } = useAuth();
+
+  const confirmSignout = () => {
+    Modal.confirm({
+      title: "Sign out?",
+      content: "You'll need to enter your credentials to sign back in.",
+      okText: "Sign out",
+      cancelText: "Stay signed in",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await signout();
+        navigate("/", { replace: true });
+      },
+    });
+  };
+
+  const userMenu = {
+    items: [
+      {
+        key: "dashboard",
+        label: "Dashboard",
+        icon: <Icon icon="mdi:view-dashboard-outline" />,
+        onClick: () => navigate("/dashboard"),
+      },
+      {
+        key: "profile",
+        label: "Profile",
+        icon: <Icon icon="mdi:account-cog-outline" />,
+        onClick: () => navigate("/profile"),
+      },
+      { type: "divider" },
+      {
+        key: "signout",
+        label: "Sign out",
+        icon: <Icon icon="mdi:logout" />,
+        danger: true,
+        onClick: confirmSignout,
+      },
+    ],
+  };
 
   if (location.pathname !== prevPath) {
     setPrevPath(location.pathname);
@@ -125,6 +166,29 @@ export function Header() {
           className="flex items-center gap-1.5 sm:gap-2"
         >
           <ThemeToggle />
+          {user ? (
+            <Dropdown menu={userMenu} placement="bottomRight" trigger={["click"]}>
+              <button
+                type="button"
+                aria-label="Account menu"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-1.5 py-1 hover:bg-surface-hover transition"
+              >
+                <Avatar size={28} className="!bg-accent !text-bg !font-bold">
+                  {user.name?.[0]?.toUpperCase() || "?"}
+                </Avatar>
+                <span className="hidden sm:inline pr-2 text-sm font-medium text-fg max-w-[8rem] truncate">
+                  {user.name}
+                </span>
+              </button>
+            </Dropdown>
+          ) : (
+            <Button
+              onClick={() => navigate("/signin")}
+              className="!font-semibold !whitespace-nowrap hidden sm:inline-flex"
+            >
+              Sign in
+            </Button>
+          )}
           <Button
             type="primary"
             onClick={() => navigate("/builder")}
@@ -185,6 +249,52 @@ export function Header() {
                   </NavLink>
                 </motion.div>
               ))}
+              <div className="my-2 border-t border-line" />
+              {user ? (
+                <>
+                  <NavLink
+                    to="/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                  >
+                    Dashboard
+                  </NavLink>
+                  <NavLink
+                    to="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                  >
+                    Profile
+                  </NavLink>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      confirmSignout();
+                    }}
+                    className="text-left block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <NavLink
+                    to="/signin"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-3 rounded-lg text-base font-medium text-fg-muted hover:bg-surface-hover hover:text-fg"
+                  >
+                    Sign in
+                  </NavLink>
+                  <NavLink
+                    to="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-3 rounded-lg text-base font-medium text-accent hover:bg-surface-hover"
+                  >
+                    Create account
+                  </NavLink>
+                </>
+              )}
             </nav>
           </motion.div>
         )}
