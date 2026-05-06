@@ -47,11 +47,45 @@ function readStoredTrip() {
   }
 }
 
+// Identity used to dedupe saves — the same trip shouldn't appear twice in
+// the saved list. Prompt is the cleanest signal (one prompt -> one trip).
+// Falls back to a content fingerprint for trips without a prompt field.
+function tripIdentity(trip) {
+  if (!trip) return null;
+  if (typeof trip.prompt === "string" && trip.prompt.trim()) {
+    return `p:${trip.prompt.trim().toLowerCase()}`;
+  }
+  return `f:${trip.destination ?? ""}|${trip.tripType ?? ""}|${trip.days?.length ?? 0}|${(trip.summary ?? "").slice(0, 80)}`;
+}
+
+function readSavedTrips() {
+  try {
+    const raw = localStorage.getItem("savedTrips");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function makeSavedId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function TripDetailsPage() {
   const navigate = useNavigate();
   const [trip] = useState(readStoredTrip);
   const [activeDay, setActiveDay] = useState(1);
-  const [saved, setSaved] = useState(false);
+  // Reflects whether this trip is currently in localStorage["savedTrips"].
+  // Initialized from storage on mount so the bookmark icon is correct even
+  // when revisiting a previously-saved trip.
+  const [saved, setSaved] = useState(() => {
+    const t = readStoredTrip();
+    if (!t) return false;
+    const id = tripIdentity(t);
+    return readSavedTrips().some((s) => tripIdentity(s) === id);
+  });
   const heroRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -77,22 +111,26 @@ export function TripDetailsPage() {
   };
 
   const handleSave = () => {
-    const stored = JSON.parse(localStorage.getItem("savedTrips") || "[]");
+    const id = tripIdentity(trip);
+    const stored = readSavedTrips();
+    const exists = stored.some((s) => tripIdentity(s) === id);
+
+    if (exists) {
+      // Toggle off — remove the matching entry rather than create a duplicate.
+      const next = stored.filter((s) => tripIdentity(s) !== id);
+      localStorage.setItem("savedTrips", JSON.stringify(next));
+      setSaved(false);
+      message.info({ content: "Removed from saved trips.", duration: 2 });
+      return;
+    }
+
     // Tag with savedAt/savedId so the Saved Trips page can render dates and
     // delete by stable id rather than list index.
-    const stamped = {
-      ...trip,
-      savedAt: Date.now(),
-      savedId:
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
-    };
-    stored.unshift(stamped);
-    localStorage.setItem("savedTrips", JSON.stringify(stored.slice(0, 20)));
+    const stamped = { ...trip, savedAt: Date.now(), savedId: makeSavedId() };
+    const next = [stamped, ...stored].slice(0, 20);
+    localStorage.setItem("savedTrips", JSON.stringify(next));
     setSaved(true);
     message.success({ content: "Trip saved!", duration: 2 });
-    setTimeout(() => setSaved(false), 2000);
   };
 
   const handleEdit = () => {
