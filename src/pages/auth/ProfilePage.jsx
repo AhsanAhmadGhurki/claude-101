@@ -13,7 +13,7 @@ import {
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../auth/authContext";
+import { useAuth } from "../../../client/src/store/auth/authContext";
 import { api, ApiError } from "../../../client/src/api/client";
 import { PasswordStrengthMeter } from "../../../client/src/components/ui/PasswordStrengthMeter";
 import { Shake } from "../../../client/src/components/ui/Shake";

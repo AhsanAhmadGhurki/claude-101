@@ -4,7 +4,7 @@ import { Button, Dropdown, Avatar, Modal } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "../ui/ThemeToggle";
-import { useAuth } from "../../../../src/auth/authContext";
+import { useAuth } from "../../store/auth/authContext";
 
 const linkClass = ({ isActive }) =>
   `relative text-sm font-medium transition ${

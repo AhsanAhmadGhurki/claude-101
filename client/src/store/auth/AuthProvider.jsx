@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, ApiError, setAuthFailureHandler } from "../../client/src/api/client";
+import { api, ApiError, setAuthFailureHandler } from "../../api/client";
 import { AuthContext } from "./authContext";
 
 // One-time cleanup of the legacy localStorage token from the v1 system.
