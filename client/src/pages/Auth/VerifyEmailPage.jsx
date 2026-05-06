@@ -1,103 +1,85 @@
 import { useEffect, useState } from "react";
-import { Button, Alert, Spin, Input, Form } from "antd";
-import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
+import { Form, Button, Alert, Input } from "antd";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../../api/client";
 import { useAuth } from "../../store/auth/authContext";
 import { AuthShell } from "./AuthShell";
+import { Shake } from "../../components/ui/Shake";
 import { SuccessCheck } from "../../components/ui/SuccessCheck";
 
-// Two modes:
-//  - With ?token=...  → automatically verify (the email link path).
-//  - Without token    → "check your inbox" + resend form (post-signup path).
+// Email-verification flow now uses a 6-digit OTP. The user lands here either
+// directly after signup (state.email passed by SignUpPage) or by clicking a
+// "verify" prompt while signed in (email pulled from useAuth().user). If we
+// have neither, we ask them to enter their email so we can target the
+// resend / verify calls correctly.
 export function VerifyEmailPage() {
-  const [params] = useSearchParams();
-  const token = params.get("token");
   const location = useLocation();
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const presetEmail = location.state?.email || user?.email || "";
 
-  const [verifying, setVerifying] = useState(Boolean(token));
-  const [verifyError, setVerifyError] = useState(null);
-
-  const [resendForm] = Form.useForm();
+  const [email, setEmail] = useState(presetEmail);
+  const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
-  const [resendDone, setResendDone] = useState(false);
-  const [devLink, setDevLink] = useState(null);
+  const [topError, setTopError] = useState(null);
+  const [topNotice, setTopNotice] = useState(null);
+  const [devOtp, setDevOtp] = useState(null);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [verified, setVerified] = useState(false);
 
+  // If a fresh email was passed via state, prefill it once.
   useEffect(() => {
-    if (!token) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        await api.verifyEmail(token);
-        if (cancelled) return;
-        // Refresh /me so AuthProvider picks up isVerified=true.
-        await refreshUser().catch(() => {});
-      } catch (err) {
-        if (!cancelled) {
-          setVerifyError(
-            err instanceof ApiError ? err.message : "Verification failed."
-          );
-        }
-      } finally {
-        if (!cancelled) setVerifying(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [token, refreshUser]);
+    if (presetEmail) form.setFieldValue("email", presetEmail);
+  }, [presetEmail, form]);
 
-  const onResend = async ({ email }) => {
+  const onVerify = async ({ email: formEmail, code }) => {
+    setTopError(null);
+    setTopNotice(null);
+    setSubmitting(true);
+    try {
+      await api.verifyEmail({ email: formEmail, code });
+      setEmail(formEmail);
+      setVerified(true);
+      await refreshUser().catch(() => {}); // pick up isVerified=true if signed in
+    } catch (err) {
+      setShakeKey((k) => k + 1);
+      if (err instanceof ApiError) {
+        setTopError(err.message);
+      } else {
+        setTopError("Could not verify. Please try again.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onResend = async () => {
+    const formEmail = form.getFieldValue("email") || email;
+    if (!formEmail) {
+      setTopError("Enter your email above first.");
+      return;
+    }
+    setTopError(null);
+    setTopNotice(null);
     setResending(true);
     try {
-      const res = await api.requestVerifyEmail(email);
-      setResendDone(true);
-      if (res?.verifyLink) setDevLink(res.verifyLink);
-    } catch {
-      // Always optimistic — server doesn't reveal whether the email exists.
-      setResendDone(true);
+      const res = await api.requestVerifyEmail(formEmail);
+      setTopNotice(
+        `If the address is on file, a fresh code is on the way to ${formEmail}.`
+      );
+      if (res?.devOtp) setDevOtp(res.devOtp);
+    } catch (err) {
+      // Cooldown / rate-limit messages should reach the user verbatim.
+      setTopError(
+        err instanceof ApiError ? err.message : "Could not resend. Try again."
+      );
     } finally {
       setResending(false);
     }
   };
 
-  if (token) {
-    if (verifying) {
-      return (
-        <AuthShell title="Verifying your email" subtitle="One moment…">
-          <div className="flex justify-center py-4">
-            <Spin size="large" />
-          </div>
-        </AuthShell>
-      );
-    }
-    if (verifyError) {
-      return (
-        <AuthShell
-          title="We couldn't verify that link"
-          subtitle="It may have expired or already been used."
-          footer={
-            <Link to="/signin" className="text-accent font-medium hover:underline">
-              Back to sign in
-            </Link>
-          }
-        >
-          <Alert type="error" showIcon message={verifyError} />
-          <Button
-            className="!mt-4"
-            block
-            size="large"
-            onClick={() =>
-              navigate("/verify-email", { replace: true, state: { email: presetEmail } })
-            }
-          >
-            Request a new link
-          </Button>
-        </AuthShell>
-      );
-    }
+  if (verified) {
     return (
       <AuthShell
         title="Email verified"
@@ -118,14 +100,13 @@ export function VerifyEmailPage() {
     );
   }
 
-  // No token in URL — show the "we sent you an email" + resend UI.
   return (
     <AuthShell
-      title="Check your inbox"
+      title="Verify your email"
       subtitle={
         presetEmail
-          ? `We sent a verification link to ${presetEmail}. Click it to activate your account.`
-          : "We sent you a verification link. Click it to activate your account."
+          ? `Enter the 6-digit code we sent to ${presetEmail}.`
+          : "Enter your email and the 6-digit code from your inbox."
       }
       footer={
         <Link to="/signin" className="text-accent font-medium hover:underline">
@@ -133,43 +114,96 @@ export function VerifyEmailPage() {
         </Link>
       }
     >
-      {resendDone ? (
-        <Alert
-          type="success"
-          showIcon
-          message="If the address is on file, a new link is on the way."
-          description={
-            devLink ? (
-              <a href={devLink} className="text-accent break-all hover:underline">
-                {devLink}
-              </a>
-            ) : null
-          }
-        />
-      ) : (
+      <Shake trigger={shakeKey}>
+        {topError && (
+          <Alert type="error" showIcon message={topError} className="!mb-4" />
+        )}
+        {topNotice && (
+          <Alert
+            type="success"
+            showIcon
+            message={topNotice}
+            description={
+              devOtp ? (
+                <span>
+                  Dev mode code:{" "}
+                  <code className="font-mono font-bold tracking-widest">
+                    {devOtp}
+                  </code>
+                </span>
+              ) : null
+            }
+            className="!mb-4"
+          />
+        )}
+
         <Form
-          form={resendForm}
+          form={form}
           layout="vertical"
-          initialValues={{ email: presetEmail }}
-          onFinish={onResend}
-          disabled={resending}
           requiredMark={false}
+          onFinish={onVerify}
+          disabled={submitting}
+          initialValues={{ email: presetEmail }}
         >
           <Form.Item
             name="email"
-            label="Resend to"
+            label="Email"
             rules={[
               { required: true, message: "Please enter your email" },
               { type: "email", message: "Enter a valid email" },
             ]}
           >
-            <Input size="large" autoComplete="email" />
+            <Input
+              size="large"
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
           </Form.Item>
-          <Button type="primary" htmlType="submit" size="large" loading={resending} block>
-            Resend verification email
+
+          <Form.Item
+            name="code"
+            label="6-digit code"
+            rules={[
+              { required: true, message: "Enter the code from your email" },
+              {
+                pattern: /^\d{6}$/,
+                message: "Code must be 6 digits",
+              },
+            ]}
+          >
+            <Input
+              size="large"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="123456"
+              className="!font-mono !tracking-[0.5em] !text-center !text-lg"
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            size="large"
+            loading={submitting}
+            block
+          >
+            Verify email
           </Button>
         </Form>
-      )}
+
+        <div className="mt-4 text-center text-sm text-fg-muted">
+          Didn&apos;t get a code?{" "}
+          <button
+            type="button"
+            onClick={onResend}
+            disabled={resending || submitting}
+            className="text-accent font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resending ? "Sending…" : "Resend"}
+          </button>
+        </div>
+      </Shake>
     </AuthShell>
   );
 }

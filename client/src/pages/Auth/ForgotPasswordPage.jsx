@@ -1,28 +1,30 @@
 import { useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../../api/client";
 import { AuthShell } from "./AuthShell";
 import { Shake } from "../../components/ui/Shake";
-import { SuccessCheck } from "../../components/ui/SuccessCheck";
 
 export function ForgotPasswordPage() {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [topError, setTopError] = useState(null);
   const [shakeKey, setShakeKey] = useState(0);
-  const [devLink, setDevLink] = useState(null);
 
   const onFinish = async ({ email }) => {
     setTopError(null);
     setSubmitting(true);
     try {
       const res = await api.forgotPassword(email);
-      // Server always responds 200 — we just confirm we sent the email.
-      setDone(true);
-      // Dev-only convenience: if SMTP isn't configured, surface the link.
-      if (res?.resetLink) setDevLink(res.resetLink);
+      // Server always responds 200 (no account-existence leak). We forward
+      // the user to the reset-password page where they enter the OTP from
+      // their email. devOtp is dev-only; passed through as state so the
+      // reset page can surface it as a hint.
+      navigate("/reset-password", {
+        replace: true,
+        state: { email, devOtp: res?.devOtp ?? null },
+      });
     } catch (err) {
       setShakeKey((k) => k + 1);
       setTopError(
@@ -33,47 +35,10 @@ export function ForgotPasswordPage() {
     }
   };
 
-  if (done) {
-    return (
-      <AuthShell
-        title="Check your inbox"
-        subtitle="If an account exists for that email, we just sent a reset link."
-        footer={
-          <Link to="/signin" className="text-accent font-medium hover:underline">
-            Back to sign in
-          </Link>
-        }
-      >
-        <div className="flex flex-col items-center text-center py-2">
-          <SuccessCheck size={56} />
-          <p className="mt-3 text-sm text-fg-muted">
-            The link expires in 15 minutes.
-          </p>
-          {devLink && (
-            <Alert
-              className="!mt-4 !text-left w-full"
-              type="info"
-              showIcon
-              message="Dev mode: SMTP not configured"
-              description={
-                <a
-                  href={devLink}
-                  className="text-accent break-all hover:underline"
-                >
-                  {devLink}
-                </a>
-              }
-            />
-          )}
-        </div>
-      </AuthShell>
-    );
-  }
-
   return (
     <AuthShell
       title="Forgot password"
-      subtitle="Enter your email and we'll send you a reset link."
+      subtitle="Enter your email and we'll send you a 6-digit code to reset it."
       footer={
         <Link to="/signin" className="text-accent font-medium hover:underline">
           Back to sign in
@@ -99,7 +64,11 @@ export function ForgotPasswordPage() {
               { type: "email", message: "Enter a valid email" },
             ]}
           >
-            <Input size="large" placeholder="you@example.com" autoComplete="email" />
+            <Input
+              size="large"
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
           </Form.Item>
           <Button
             type="primary"
@@ -108,7 +77,7 @@ export function ForgotPasswordPage() {
             loading={submitting}
             block
           >
-            Send reset link
+            Send reset code
           </Button>
         </Form>
       </Shake>

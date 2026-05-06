@@ -108,13 +108,15 @@ export const api = {
   signout: () => request("/auth/signout", { method: "POST" }),
   refresh: () => request("/auth/refresh", { method: "POST" }),
 
-  verifyEmail: (token) =>
-    request("/auth/verify-email", { method: "POST", body: { token } }),
+  // payload: { email, code }
+  verifyEmail: (payload) =>
+    request("/auth/verify-email", { method: "POST", body: payload }),
   requestVerifyEmail: (email) =>
     request("/auth/request-verify-email", { method: "POST", body: { email } }),
 
   forgotPassword: (email) =>
     request("/auth/forgot-password", { method: "POST", body: { email } }),
+  // payload: { email, code, password }
   resetPassword: (payload) =>
     request("/auth/reset-password", { method: "POST", body: payload }),
 
