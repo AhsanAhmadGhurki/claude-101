@@ -6,7 +6,7 @@ import { AuthShell } from "./AuthShell";
 import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
 import { Shake } from "../../auth/Shake";
 import { SuccessCheck } from "../../auth/SuccessCheck";
-import { scorePassword } from "../../auth/passwordStrength";
+import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
 
 export function ResetPasswordPage() {
   const [params] = useSearchParams();

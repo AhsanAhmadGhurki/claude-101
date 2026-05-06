@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { peekCache, resolveImage } from "../lib/image/resolve.js";
+import { peekCache, resolveImage } from "../../client/src/services/image/resolve.js";
 
 const EMPTY = { place_name: null, image_url: null, source: null, type: null };
 

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { scorePassword } from "./passwordStrength";
+import { scorePassword } from "../../client/src/services/auth/passwordStrength";
 
 export function PasswordStrengthMeter({ password }) {
   const { label, color, percent } = scorePassword(password);

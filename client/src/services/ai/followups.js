@@ -1,4 +1,4 @@
-import destinations from "../../../client/src/mocks/destinations.json";
+import destinations from "../../mocks/destinations.json";
 
 const DESTINATION_OPTIONS = Object.keys(destinations).map((key) => ({
   value: key,

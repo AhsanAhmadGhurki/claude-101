@@ -17,7 +17,7 @@ import { useAuth } from "../../auth/authContext";
 import { api, ApiError } from "../../../client/src/api/client";
 import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
 import { Shake } from "../../auth/Shake";
-import { scorePassword } from "../../auth/passwordStrength";
+import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
 
 const { Title, Text } = Typography;
 

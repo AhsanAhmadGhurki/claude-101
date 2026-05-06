@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { generateTripSync } from "../lib/ai/generateTrip";
+import { generateTripSync } from "../../client/src/services/ai/generateTrip";
 
 function useDebouncedValue(value, delay) {
   const [debounced, setDebounced] = useState(value);

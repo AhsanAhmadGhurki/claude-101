@@ -1,4 +1,4 @@
-import destinations from "../../../client/src/mocks/destinations.json";
+import destinations from "../../mocks/destinations.json";
 
 const BUDGET_RULES = [
   { tier: "low", patterns: ["budget", "cheap", "low-cost", "shoestring", "backpack"] },
