@@ -1,6 +1,6 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { useSmoothScroll } from "../../hooks/useSmoothScroll";
+import { useSmoothScroll } from "../../../client/src/hooks/useSmoothScroll";
 
 export function PageShell({ children }) {
   useSmoothScroll();

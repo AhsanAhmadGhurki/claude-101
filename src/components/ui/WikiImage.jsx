@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
-import { useResolvedImage } from "../../hooks/useResolvedImage";
+import { useResolvedImage } from "../../../client/src/hooks/useResolvedImage";
 import { pickCategoryIcon } from "../../../client/src/lib/utils/pickCategoryIcon";
 import { pickFallbackImage } from "../../../client/src/lib/utils/fallbackImage";
 import { optimizeImageUrl, buildSrcSet } from "../../../client/src/lib/utils/imageUrl";
