@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button, message } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button, Modal, message } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { WikiImage } from "../../../components/ui/WikiImage";
 import { toWikiQuery } from "../../../lib/utils/toWikiQuery";
+import { useAuth } from "../../../store/auth/authContext";
 
 function pickDayQueries(day, destination) {
   const queries = [];
@@ -75,6 +76,8 @@ function makeSavedId() {
 
 export function TripDetailsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const [trip] = useState(readStoredTrip);
   const [activeDay, setActiveDay] = useState(1);
   // Reflects whether this trip is currently in localStorage["savedTrips"].
@@ -86,6 +89,9 @@ export function TripDetailsPage() {
     const id = tripIdentity(t);
     return readSavedTrips().some((s) => tripIdentity(s) === id);
   });
+  // Open when an unauthenticated user clicks Save — prompts them to sign in
+  // and preserves the current location so they return here afterwards.
+  const [loginPromptOpen, setLoginPromptOpen] = useState(false);
   const heroRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -111,6 +117,15 @@ export function TripDetailsPage() {
   };
 
   const handleSave = () => {
+    // Saving is gated behind sign-in. Anonymous users see a prompt with
+    // a sign-in CTA; the post-signin redirect chain (signin → login-otp
+    // → here) carries the trip URL via location.state.from so they land
+    // right back on this page.
+    if (!user) {
+      setLoginPromptOpen(true);
+      return;
+    }
+
     const id = tripIdentity(trip);
     const stored = readSavedTrips();
     const exists = stored.some((s) => tripIdentity(s) === id);
@@ -145,6 +160,11 @@ export function TripDetailsPage() {
   };
 
   if (!trip) return null;
+
+  const goToSignIn = () => {
+    setLoginPromptOpen(false);
+    navigate("/signin", { state: { from: location } });
+  };
 
   return (
     <div>
@@ -492,6 +512,21 @@ export function TripDetailsPage() {
           </motion.div>
         </div>
       </section>
+
+      <Modal
+        open={loginPromptOpen}
+        title="Sign in to save trips"
+        onOk={goToSignIn}
+        onCancel={() => setLoginPromptOpen(false)}
+        okText="Sign in"
+        cancelText="Maybe later"
+        okButtonProps={{ icon: <Icon icon="mdi:login" /> }}
+      >
+        <p className="text-fg-muted">
+          You need an account to save trips to your library. Sign in and we&apos;ll
+          bring you right back here.
+        </p>
+      </Modal>
     </div>
   );
 }
