@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
-import { DESTINATIONS } from "../../../client/src/data/destinations";
-import { DestinationImage } from "../../../client/src/components/ui/DestinationImage";
+import { DESTINATIONS } from "../../../data/destinations";
+import { DestinationImage } from "../../../components/ui/DestinationImage";
 
 const [BIG, ...REST] = DESTINATIONS.slice(0, 5);
 

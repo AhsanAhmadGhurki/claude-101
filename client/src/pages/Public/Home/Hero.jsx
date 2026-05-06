@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, animate } from "framer-motion";
-import { useTypewriter } from "../../../client/src/hooks/useTypewriter";
+import { useTypewriter } from "../../../hooks/useTypewriter";
 
 const HERO_BG =
   "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2400&q=80";
