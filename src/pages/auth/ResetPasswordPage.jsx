@@ -3,9 +3,9 @@ import { Form, Input, Button, Alert } from "antd";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
-import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
-import { Shake } from "../../auth/Shake";
-import { SuccessCheck } from "../../auth/SuccessCheck";
+import { PasswordStrengthMeter } from "../../../client/src/components/ui/PasswordStrengthMeter";
+import { Shake } from "../../../client/src/components/ui/Shake";
+import { SuccessCheck } from "../../../client/src/components/ui/SuccessCheck";
 import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
 
 export function ResetPasswordPage() {

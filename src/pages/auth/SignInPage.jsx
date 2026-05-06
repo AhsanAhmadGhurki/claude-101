@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../auth/authContext";
 import { ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
-import { Shake } from "../../auth/Shake";
+import { Shake } from "../../../client/src/components/ui/Shake";
 
 export function SignInPage() {
   const { signin } = useAuth();

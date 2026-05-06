@@ -4,7 +4,7 @@ import { Link, useLocation, useSearchParams, useNavigate } from "react-router-do
 import { api, ApiError } from "../../../client/src/api/client";
 import { useAuth } from "../../auth/authContext";
 import { AuthShell } from "./AuthShell";
-import { SuccessCheck } from "../../auth/SuccessCheck";
+import { SuccessCheck } from "../../../client/src/components/ui/SuccessCheck";
 
 // Two modes:
 //  - With ?token=...  → automatically verify (the email link path).

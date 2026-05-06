@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/authContext";
 import { ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
-import { PasswordStrengthMeter } from "../../auth/PasswordStrengthMeter";
-import { Shake } from "../../auth/Shake";
+import { PasswordStrengthMeter } from "../../../client/src/components/ui/PasswordStrengthMeter";
+import { Shake } from "../../../client/src/components/ui/Shake";
 import { scorePassword } from "../../../client/src/services/auth/passwordStrength";
 
 export function SignUpPage() {

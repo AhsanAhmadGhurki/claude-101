@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "../../../client/src/theme/themeContext";
+import { useTheme } from "../../theme/themeContext";
 
 export function ThemeToggle({ className = "" }) {
   const { mode, toggle } = useTheme();

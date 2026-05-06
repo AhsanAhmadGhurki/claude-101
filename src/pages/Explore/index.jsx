@@ -4,7 +4,7 @@ import { Input } from "antd";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CATEGORIES, DESTINATIONS } from "../../../client/src/data/destinations";
-import { DestinationImage } from "../../components/ui/DestinationImage";
+import { DestinationImage } from "../../../client/src/components/ui/DestinationImage";
 
 export function ExplorePage() {
   const [active, setActive] = useState("all");

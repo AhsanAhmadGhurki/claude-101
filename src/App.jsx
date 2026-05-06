@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { PageShell } from "./components/layout/PageShell";
+import { PageShell } from "../client/src/components/layout/PageShell";
 import { HomePage } from "./pages/Home";
 import { ExplorePage } from "./pages/Explore";
 import { TripBuilderPage } from "./pages/TripBuilder";
@@ -19,7 +19,7 @@ import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/auth/ResetPasswordPage";
 import { VerifyEmailPage } from "./pages/auth/VerifyEmailPage";
 import { ProfilePage } from "./pages/auth/ProfilePage";
-import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { ProtectedRoute } from "../client/src/components/auth/ProtectedRoute";
 import "./index.css";
 
 const pageVariants = {

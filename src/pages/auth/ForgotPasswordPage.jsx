@@ -3,8 +3,8 @@ import { Form, Input, Button, Alert } from "antd";
 import { Link } from "react-router-dom";
 import { api, ApiError } from "../../../client/src/api/client";
 import { AuthShell } from "./AuthShell";
-import { Shake } from "../../auth/Shake";
-import { SuccessCheck } from "../../auth/SuccessCheck";
+import { Shake } from "../../../client/src/components/ui/Shake";
+import { SuccessCheck } from "../../../client/src/components/ui/SuccessCheck";
 
 export function ForgotPasswordPage() {
   const [form] = Form.useForm();
