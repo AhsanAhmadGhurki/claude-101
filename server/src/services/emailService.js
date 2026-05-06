@@ -49,6 +49,13 @@ const PURPOSE_COPY = {
     safety:
       "If you didn't request a reset, ignore this email — your password is unchanged.",
   },
+  login_verification: {
+    subject: "Your sign-in code — Adventure AI",
+    headline: "Confirm your sign-in",
+    intro: "Use this 6-digit code to finish signing in.",
+    safety:
+      "If you didn't just try to sign in, change your password immediately — someone else may know it.",
+  },
 };
 
 function renderHtml({ headline, intro, code, ttl, name, safety }) {

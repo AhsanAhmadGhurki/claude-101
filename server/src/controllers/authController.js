@@ -1,6 +1,8 @@
 import {
   createUser,
   authenticate,
+  startLoginOtp,
+  verifyLoginOtp,
   verifyEmailOtp,
   requestVerificationOtp,
   startPasswordReset,
@@ -36,10 +38,32 @@ export async function signup(req, res, next) {
   }
 }
 
+// signin is now a two-step flow:
+//   step 1: POST /auth/signin    → verify creds, issue login OTP
+//   step 2: POST /auth/verify-login-otp → consume OTP, issue session
+//
+// Step 1 returns { pendingOtp: true, email } and DOES NOT set auth cookies.
+// Frontend then collects the OTP and posts to /verify-login-otp.
 export async function signin(req, res, next) {
   try {
     const { email, password } = req.body || {};
     const user = await authenticate({ email, password });
+    const otpResult = await startLoginOtp(user);
+    res.json({
+      pendingOtp: true,
+      email: user.email,
+      ...devOtp(otpResult),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Step 2 of signin: validate the OTP and issue session cookies.
+export async function verifyLogin(req, res, next) {
+  try {
+    const { email, code } = req.body || {};
+    const user = await verifyLoginOtp({ email, code });
     await issueSession(res, user, { req });
     res.json({ user: user.toPublicJSON() });
   } catch (err) {

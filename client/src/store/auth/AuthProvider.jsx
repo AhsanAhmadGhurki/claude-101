@@ -40,8 +40,32 @@ export function AuthProvider({ children }) {
     return () => setAuthFailureHandler(null);
   }, []);
 
+  // signin is now a two-step flow. Step 1 verifies creds and triggers an
+  // email OTP; the response carries { pendingOtp: true, email } and NO
+  // session cookies. The caller is expected to navigate to the OTP page
+  // and call verifyLoginOtp with the code from the user's email.
+  //
+  // For dev convenience, response.devOtp (only present in non-prod) is
+  // forwarded so the OTP page can display it as a hint.
   const signin = useCallback(async (credentials) => {
-    const { user } = await api.signin(credentials);
+    const result = await api.signin(credentials);
+    if (result?.pendingOtp) {
+      return {
+        pendingOtp: true,
+        email: result.email,
+        devOtp: result.devOtp ?? null,
+      };
+    }
+    // Defensive fallback — if the backend ever returns the legacy direct-
+    // session shape, accept it and set the user.
+    if (result?.user) setUser(result.user);
+    return { pendingOtp: false, user: result?.user };
+  }, []);
+
+  // Step 2 of signin. Posts the OTP, server validates and issues session
+  // cookies, response contains the user.
+  const verifyLoginOtp = useCallback(async ({ email, code }) => {
+    const { user } = await api.verifyLoginOtp({ email, code });
     setUser(user);
     return user;
   }, []);
@@ -49,7 +73,7 @@ export function AuthProvider({ children }) {
   const signup = useCallback(async (payload) => {
     const result = await api.signup(payload);
     setUser(result.user);
-    return result; // includes optional dev `verifyLink`
+    return result; // includes optional dev `devOtp`
   }, []);
 
   const signout = useCallback(async () => {
@@ -68,8 +92,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, signin, signup, signout, refreshUser }),
-    [user, loading, signin, signup, signout, refreshUser]
+    () => ({
+      user,
+      loading,
+      signin,
+      verifyLoginOtp,
+      signup,
+      signout,
+      refreshUser,
+    }),
+    [user, loading, signin, verifyLoginOtp, signup, signout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
