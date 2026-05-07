@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "cd client && vite",
     "build": "cd client && vite build",
@@ -12,6 +16,7 @@
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@iconify/react": "^6.0.2",
+    "@vercel/analytics": "^2.0.1",
     "antd": "^6.3.7",
     "framer-motion": "^12.38.0",
     "gsap": "^3.15.0",
