@@ -17,9 +17,22 @@ export function createApp() {
   // Behind a reverse proxy (Heroku, nginx, etc.) — needed for correct req.ip.
   app.set("trust proxy", 1);
 
+  // CLIENT_ORIGIN may be a single origin or a comma-separated list — typical
+  // production setup needs the local dev origin, the Vercel preview origin,
+  // and the production domain all permitted.
+  const allowedOrigins = String(env.clientOrigin)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   app.use(
     cors({
-      origin: env.clientOrigin,
+      origin(origin, cb) {
+        // Server-to-server / curl / same-origin (no Origin header) — allow.
+        if (!origin) return cb(null, true);
+        if (allowedOrigins.includes(origin)) return cb(null, true);
+        return cb(new Error(`CORS: origin "${origin}" not allowed`));
+      },
       credentials: true, // required for cookie auth
     })
   );

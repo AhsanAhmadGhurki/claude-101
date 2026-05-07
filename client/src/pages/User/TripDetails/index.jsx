@@ -9,6 +9,7 @@ import { useAuth } from "../../../store/auth/authContext";
 import { api, ApiError } from "../../../api/client";
 import { PageLoader } from "../../../components/ui/PageLoader";
 import { ErrorState } from "../../../components/ui/ErrorState";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
 
@@ -74,6 +75,9 @@ export function TripDetailsPage({ mode = "owner" }) {
   const isShareView = mode === "share";
 
   const [trip, setTrip] = useState(null);
+  // Page title tracks the loaded destination so the browser tab + history
+  // entries are meaningful (otherwise every saved trip looks identical).
+  usePageTitle(trip?.destination ? `${trip.destination} trip` : "Your trip");
   // Server identity for this trip — used to build the Share URL once
   // available. Populated from local cache, owner fetch, or save response.
   const [shareId, setShareId] = useState(null);
@@ -480,7 +484,7 @@ export function TripDetailsPage({ mode = "owner" }) {
                   id={`day-${d.day}`}
                   initial={{ opacity: 0, y: 80, scale: 0.94, filter: "blur(8px)" }}
                   whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                  viewport={{ once: true, margin: "-100px" }}
+                  viewport={{ once: true, amount: 0.1, margin: "-100px" }}
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                   className={`grid md:grid-cols-2 gap-6 items-stretch ${
                     reverse ? "md:[&>:first-child]:order-2" : ""
@@ -507,7 +511,7 @@ export function TripDetailsPage({ mode = "owner" }) {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.5 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
+                      viewport={{ once: true, amount: 0.1 }}
                       transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
                       className="absolute top-5 left-5 text-7xl font-bold text-white/95 drop-shadow-lg leading-none"
                     >
@@ -539,7 +543,7 @@ export function TripDetailsPage({ mode = "owner" }) {
                             key={k}
                             initial={{ opacity: 0, x: 20 }}
                             whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
+                            viewport={{ once: true, amount: 0.1 }}
                             transition={{ delay: 0.1 + k * 0.08, duration: 0.5 }}
                             className="flex gap-3 items-start text-fg/90 leading-relaxed"
                           >
@@ -577,7 +581,7 @@ export function TripDetailsPage({ mode = "owner" }) {
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.94, filter: "blur(8px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             whileHover={{ y: -6, scale: 1.01 }}
             className="rounded-3xl bg-surface border border-line surface-shadow p-7 sm:p-8"
@@ -597,7 +601,7 @@ export function TripDetailsPage({ mode = "owner" }) {
                   key={k}
                   initial={{ opacity: 0, x: -15 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ delay: 0.05 + k * 0.04, duration: 0.4 }}
                   className="flex gap-2 items-center text-fg-muted text-sm"
                 >
@@ -614,7 +618,7 @@ export function TripDetailsPage({ mode = "owner" }) {
           <motion.div
             initial={{ opacity: 0, y: 60, scale: 0.94, filter: "blur(8px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ delay: 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             whileHover={{ y: -6, scale: 1.01 }}
             className="rounded-3xl bg-surface border border-line surface-shadow p-7 sm:p-8"
@@ -634,7 +638,7 @@ export function TripDetailsPage({ mode = "owner" }) {
                   key={k}
                   initial={{ opacity: 0, x: -15 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ delay: 0.05 + k * 0.04, duration: 0.4 }}
                   className="flex gap-3 items-start text-fg-muted text-sm leading-relaxed"
                 >

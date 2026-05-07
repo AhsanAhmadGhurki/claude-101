@@ -1,11 +1,13 @@
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { TopProgressBar } from "../ui/TopProgressBar";
 import { useSmoothScroll } from "../../hooks/useSmoothScroll";
 
 export function PageShell({ children }) {
   useSmoothScroll();
   return (
     <div className="relative min-h-screen flex flex-col bg-bg text-fg transition-colors">
+      <TopProgressBar />
       {/* Keyboard-only skip link — visually hidden until focused, then
           jumps focus past the header straight to page content. */}
       <a

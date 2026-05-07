@@ -43,7 +43,7 @@ export function FeaturedDestinations() {
           <motion.span
             initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="inline-block text-xs font-bold uppercase tracking-[0.3em] text-accent"
           >
@@ -52,7 +52,7 @@ export function FeaturedDestinations() {
           <motion.h2
             initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ delay: 0.1, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="mt-3 text-4xl sm:text-5xl font-bold text-fg tracking-tight"
           >
@@ -62,7 +62,7 @@ export function FeaturedDestinations() {
         <motion.button
           initial={{ opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           onClick={() => navigate("/explore")}
           whileHover={{ x: 8, scale: 1.05 }}
@@ -79,7 +79,7 @@ export function FeaturedDestinations() {
         <motion.button
           initial={{ opacity: 0, y: 60, scale: 0.92, filter: "blur(10px)" }}
           whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, amount: 0.1, margin: "-80px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           variants={cardHover}
           whileHover="hover"
@@ -95,7 +95,7 @@ export function FeaturedDestinations() {
           <motion.span
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.1 }}
             transition={{ delay: 0.4, duration: 0.5, type: "spring" }}
             className="absolute top-5 left-5 text-xs uppercase tracking-[0.3em] text-white bg-white/15 backdrop-blur px-3 py-1 rounded-full border border-white/30"
           >
@@ -125,7 +125,7 @@ export function FeaturedDestinations() {
             key={d.id}
             initial={{ opacity: 0, y: 60, scale: 0.9, filter: "blur(8px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
             variants={smallCardHover}
             whileHover="hover"
@@ -148,7 +148,7 @@ export function FeaturedDestinations() {
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
               whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, amount: 0.1 }}
               transition={{ delay: 0.4 + i * 0.1, type: "spring", stiffness: 300 }}
               className="absolute top-4 right-4 px-2 py-1 rounded-full bg-white/15 backdrop-blur border border-white/30 text-[10px] text-white"
             >

@@ -91,7 +91,7 @@ export function HowItWorks() {
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
           >
             <motion.span
               variants={textReveal}
@@ -119,7 +119,7 @@ export function HowItWorks() {
             variants={imageVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             whileHover={{ scale: 1.04, rotate: -1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             className="hidden lg:block mt-10 relative w-full aspect-[5/4] rounded-3xl overflow-hidden border border-line surface-shadow"
@@ -135,7 +135,7 @@ export function HowItWorks() {
               <motion.p
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ delay: 0.5, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="text-xs uppercase tracking-[0.3em] text-white/80 mb-1"
               >
@@ -144,7 +144,7 @@ export function HowItWorks() {
               <motion.h3
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ delay: 0.65, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                 className="text-2xl font-bold"
               >
@@ -162,7 +162,7 @@ export function HowItWorks() {
               variants={cardVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
+              viewport={{ once: true, amount: 0.1, margin: "-60px" }}
               whileHover={{
                 y: -8,
                 scale: 1.02,
@@ -174,7 +174,7 @@ export function HowItWorks() {
               <motion.span
                 initial={{ opacity: 0, scale: 0.3, rotate: -20 }}
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.1 }}
                 transition={{ delay: 0.3 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 aria-hidden
                 className="absolute -right-3 -top-6 text-[9rem] font-bold text-fg/[0.04] leading-none pointer-events-none select-none"
@@ -198,7 +198,7 @@ export function HowItWorks() {
                     <motion.span
                       initial={{ scaleX: 0 }}
                       whileInView={{ scaleX: 1 }}
-                      viewport={{ once: true }}
+                      viewport={{ once: true, amount: 0.1 }}
                       transition={{ delay: 0.5 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                       className="h-px flex-1 bg-line origin-left"
                     />

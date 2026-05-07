@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api, ApiError } from "../../../api/client";
 import { PageLoader } from "../../../components/ui/PageLoader";
 import { ErrorState } from "../../../components/ui/ErrorState";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 function formatSavedAt(ts) {
   if (!ts) return "Saved";
@@ -50,6 +51,7 @@ function flatten(serverTrip) {
 }
 
 export function SavedTripsPage() {
+  usePageTitle("Saved trips");
   const navigate = useNavigate();
   const { message } = App.useApp();
   const [trips, setTrips] = useState([]);

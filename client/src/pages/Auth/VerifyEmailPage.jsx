@@ -6,6 +6,7 @@ import { useAuth } from "../../store/auth/authContext";
 import { AuthShell } from "./AuthShell";
 import { Shake } from "../../components/ui/Shake";
 import { SuccessCheck } from "../../components/ui/SuccessCheck";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 // Email-verification flow now uses a 6-digit OTP. The user lands here either
 // directly after signup (state.email passed by SignUpPage) or by clicking a
@@ -13,6 +14,7 @@ import { SuccessCheck } from "../../components/ui/SuccessCheck";
 // have neither, we ask them to enter their email so we can target the
 // resend / verify calls correctly.
 export function VerifyEmailPage() {
+  usePageTitle("Verify email");
   const location = useLocation();
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();

@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTripPlanner } from "../../../hooks/useTripPlanner";
 import destinations from "../../../mocks/destinations.json";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 function extractDaysFromPrompt(text) {
   if (!text) return null;
@@ -61,6 +62,7 @@ const PROMPT_INSPIRATION = [
 ];
 
 export function TripBuilderPage() {
+  usePageTitle("Trip builder");
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const initialPrompt = params.get("prompt") || "";

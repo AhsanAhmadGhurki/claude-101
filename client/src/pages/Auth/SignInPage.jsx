@@ -6,6 +6,7 @@ import { useAuth } from "../../store/auth/authContext";
 import { ApiError } from "../../api/client";
 import { AuthShell } from "./AuthShell";
 import { Shake } from "../../components/ui/Shake";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 // After this many failed attempts we surface a "you may be locked out
 // soon" banner. Server-side rate-limit kicks in at 5/15min per IP, so we
@@ -14,6 +15,7 @@ import { Shake } from "../../components/ui/Shake";
 const FAILURE_WARN_THRESHOLD = 3;
 
 export function SignInPage() {
+  usePageTitle("Sign in");
   const { signin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

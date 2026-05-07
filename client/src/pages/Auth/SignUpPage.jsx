@@ -7,8 +7,10 @@ import { AuthShell } from "./AuthShell";
 import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
 import { Shake } from "../../components/ui/Shake";
 import { scorePassword } from "../../services/auth/passwordStrength";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export function SignUpPage() {
+  usePageTitle("Create account");
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [form] = Form.useForm();

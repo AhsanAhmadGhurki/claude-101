@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { Link } from "react-router-dom";
 import { Input, Button } from "antd";
 import { motion, AnimatePresence } from "framer-motion";
+import { subscribeToNewsletter } from "../../services/newsletter/subscribe";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -44,34 +45,35 @@ export function Footer() {
 
   const handleSubscribe = async (e) => {
     e?.preventDefault();
+    if (submitting) return;
     setError(null);
     setSuccess(false);
-    if (!email.trim()) {
-      setError("Add your email first");
-      return;
-    }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError("That doesn't look like a valid email");
-      return;
-    }
     setSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 600));
+      await subscribeToNewsletter(email);
       setEmail("");
       setSuccess(true);
-    } catch {
-      setError("Something went wrong. Try again.");
+    } catch (err) {
+      setError(err?.message || "Something went wrong. Try again.");
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Auto-dismiss the success message so the footer doesn't end up with a
+  // permanent green badge after a single sign-up.
+  useEffect(() => {
+    if (!success) return;
+    const id = setTimeout(() => setSuccess(false), 4000);
+    return () => clearTimeout(id);
+  }, [success]);
 
   return (
     <motion.footer
       variants={container}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, amount: 0.1, margin: "-40px" }}
       className="border-t border-line bg-surface/40"
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 py-14 grid gap-10 md:grid-cols-12">
@@ -152,13 +154,16 @@ export function Footer() {
               }
               className="!bg-surface-2"
             />
-            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+            <motion.div
+              whileHover={submitting ? undefined : { scale: 1.04 }}
+              whileTap={submitting ? undefined : { scale: 0.96 }}
+            >
               <Button
                 type="primary"
                 size="large"
                 htmlType="submit"
                 loading={submitting}
-                disabled={submitting}
+                disabled={submitting || !email.trim()}
                 icon={!submitting && <Icon icon="mdi:send-outline" />}
                 className="!font-semibold"
               >
@@ -166,43 +171,51 @@ export function Footer() {
               </Button>
             </motion.div>
           </form>
-          <AnimatePresence mode="wait" initial={false}>
-            {error ? (
-              <motion.p
-                key="error"
-                id="newsletter-error"
-                role="alert"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="text-xs text-red-400 mt-2 flex items-center gap-1.5"
-              >
-                <Icon icon="mdi:alert-circle-outline" className="text-sm" />
-                {error}
-              </motion.p>
-            ) : success ? (
-              <motion.p
-                key="success"
-                id="newsletter-success"
-                role="status"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5"
-              >
-                You're subscribed! ✓
-              </motion.p>
-            ) : (
-              <motion.p
-                key="hint"
-                className="text-[11px] text-fg-subtle mt-2"
-              >
-                We don't share your email. Unsubscribe anytime.
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {/* aria-live so screen readers announce success / error without
+              the user having to refocus the input. */}
+          <div aria-live="polite" aria-atomic="true" className="min-h-[18px]">
+            <AnimatePresence mode="wait" initial={false}>
+              {error ? (
+                <motion.p
+                  key="error"
+                  id="newsletter-error"
+                  role="alert"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs text-red-400 mt-2 flex items-center gap-1.5"
+                >
+                  <Icon icon="mdi:alert-circle-outline" className="text-sm" />
+                  {error}
+                </motion.p>
+              ) : success ? (
+                <motion.p
+                  key="success"
+                  id="newsletter-success"
+                  role="status"
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5"
+                >
+                  <Icon icon="mdi:check-circle-outline" className="text-sm" />
+                  You're on the list — see you in your inbox soon.
+                </motion.p>
+              ) : (
+                <motion.p
+                  key="hint"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[11px] text-fg-subtle mt-2"
+                >
+                  We don't share your email. Unsubscribe anytime.
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
         </motion.div>
       </div>
 

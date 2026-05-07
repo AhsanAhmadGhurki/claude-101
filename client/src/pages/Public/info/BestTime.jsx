@@ -75,7 +75,7 @@ export function BestTimePage() {
               key={s.key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
+              viewport={{ once: true, amount: 0.1, margin: "-60px" }}
               transition={{ delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
               whileHover={{ y: -4 }}
               className="relative rounded-2xl border border-line bg-surface surface-shadow overflow-hidden"

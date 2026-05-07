@@ -1,7 +1,11 @@
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 export function InfoLayout({ eyebrow, title, intro, icon, children }) {
+  // Drives <title> for every info page (Visa / Best time / Packing / Safety
+  // / Privacy / Terms) without each page having to wire it up separately.
+  usePageTitle(title);
   return (
     <div className="pt-32 pb-24 px-6 max-w-4xl mx-auto">
       <header className="mb-12">

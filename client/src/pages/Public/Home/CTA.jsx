@@ -50,7 +50,7 @@ export function CTA() {
         style={{ y: cardY, rotate: cardRotate }}
         initial={{ opacity: 0, y: 80, scale: 0.92, filter: "blur(10px)" }}
         whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, amount: 0.1, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         whileHover={{ scale: 1.01 }}
         className="relative rounded-3xl overflow-hidden bg-surface border border-line surface-shadow-lg"
@@ -60,7 +60,7 @@ export function CTA() {
             variants={stagger}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             className="lg:col-span-7 px-8 py-14 sm:px-14 sm:py-20"
           >
             <motion.span
@@ -79,7 +79,7 @@ export function CTA() {
                   <motion.span
                     className="text-accent inline-block"
                     whileInView={{ backgroundSize: ["0% 4px", "100% 4px"] }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, amount: 0.1 }}
                     transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
                     style={{
                       backgroundImage:
@@ -98,7 +98,7 @@ export function CTA() {
                   <motion.span
                     className="text-accent inline-block"
                     whileInView={{ backgroundSize: ["0% 4px", "100% 4px"] }}
-                    viewport={{ once: true }}
+                    viewport={{ once: true, amount: 0.1 }}
                     transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
                     style={{
                       backgroundImage:

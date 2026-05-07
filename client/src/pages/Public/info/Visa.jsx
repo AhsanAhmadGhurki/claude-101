@@ -70,7 +70,7 @@ export function VisaPage() {
               key={v.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true, amount: 0.1, margin: "-50px" }}
               transition={{ delay: i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
               <InfoCard icon={v.icon} title={v.title}>

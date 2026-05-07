@@ -1,12 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 // Catch-all 404. Tailwind-only per CLAUDE.md hybrid rule for new components.
 // Aims to feel on-brand (compass icon, accent gradient, motion entry) rather
 // than the generic "Page not found" — and gives the user three concrete next
 // steps instead of leaving them stranded.
 export function NotFoundPage() {
+  usePageTitle("Page not found");
   const navigate = useNavigate();
 
   return (

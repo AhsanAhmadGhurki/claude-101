@@ -186,7 +186,7 @@ export function PackingPage() {
               key={cat.key}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
+              viewport={{ once: true, amount: 0.1, margin: "-60px" }}
               transition={{ delay: ci * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               className="rounded-2xl border border-line bg-surface surface-shadow p-6"
             >

@@ -12,6 +12,28 @@ const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const CSRF_COOKIE = "csrf_token";
 
+// Loud, one-time misconfiguration check. The dev fallback above is great on a
+// laptop but catastrophic on a deployed site: every request goes to a host
+// that only exists on the developer's machine, the browser blocks it, and the
+// only signal in the network tab is a generic "Failed to fetch". We surfapce a
+// clear console.error so the cause is obvious in production builds.
+if (typeof window !== "undefined") {
+  const host = window.location.hostname;
+  const isLocalHost = host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0";
+  const apiPointsAtLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(BASE_URL);
+  if (!isLocalHost && apiPointsAtLocalhost) {
+    console.error(
+      "[api] VITE_API_URL is not set for this deployment.\n" +
+        `The site is running on ${host} but is trying to reach ${BASE_URL}, ` +
+        "which only exists on the developer's machine. Set VITE_API_URL in " +
+        "your hosting provider's environment variables (e.g. " +
+        "https://api.your-domain.com/api) and redeploy."
+    );
+  } else if (!import.meta.env.PROD) {
+    console.info(`[api] Using API base URL: ${BASE_URL}`);
+  }
+}
+
 export class ApiError extends Error {
   constructor(message, { status, code, details } = {}) {
     super(message);
@@ -65,10 +87,17 @@ async function rawRequest(path, { method = "GET", body, headers = {} } = {}) {
       credentials: "include",
       body: body ? JSON.stringify(body) : undefined,
     });
-  } catch {
-    throw new ApiError("Cannot reach the server. Is the API running?", {
-      status: 0,
-    });
+  } catch (networkErr) {
+    // fetch() rejects for both transport failures and CORS rejections — the
+    // browser deliberately hides which one. The DevTools console will show
+    // the underlying cause; we add a hint here so the user sees something
+    // useful in the UI too.
+    console.error(`[api] Request to ${BASE_URL}${path} failed:`, networkErr);
+    throw new ApiError(
+      "Cannot reach the server. Check that the API is running and that " +
+        "CORS allows this origin.",
+      { status: 0 }
+    );
   }
 
   const text = await res.text();

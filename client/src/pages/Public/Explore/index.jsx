@@ -5,9 +5,14 @@ import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CATEGORIES, DESTINATIONS } from "../../../data/destinations";
 import { DestinationImage } from "../../../components/ui/DestinationImage";
+import { usePageTitle } from "../../../hooks/usePageTitle";
 
 export function ExplorePage() {
-  const [active, setActive] = useState("all");
+  usePageTitle("Explore destinations");
+  // Multi-select: an empty Set means "All" (no category filter applied).
+  // Storing in a Set gives O(1) toggle/lookup; a fresh instance is created
+  // on every change so React's identity check picks it up.
+  const [activeFilters, setActiveFilters] = useState(() => new Set());
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
 
@@ -21,12 +26,31 @@ export function ExplorePage() {
     []
   );
 
+  const isFilterActive = (value) =>
+    value === "all" ? activeFilters.size === 0 : activeFilters.has(value);
+
+  const toggleFilter = (value) => {
+    if (value === "all") {
+      // "All" is the cleared state — selecting it always wipes the others.
+      setActiveFilters((prev) => (prev.size === 0 ? prev : new Set()));
+      return;
+    }
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+  };
+
+  const clearAllFilters = () => setActiveFilters(new Set());
+
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list =
-      !q && active !== "all"
-        ? DESTINATIONS.filter((d) => d.category === active)
-        : DESTINATIONS;
+      activeFilters.size === 0
+        ? DESTINATIONS
+        : DESTINATIONS.filter((d) => activeFilters.has(d.category));
     if (q) {
       list = list.filter((d) => {
         const haystack = [d.name, d.region, d.tag, d.category, d.short]
@@ -37,12 +61,11 @@ export function ExplorePage() {
       });
     }
     return list;
-  }, [active, query]);
+  }, [activeFilters, query]);
 
-  const handleQueryChange = (value) => {
-    setQuery(value);
-    if (value.trim() && active !== "all") setActive("all");
-  };
+  // Search runs *alongside* category filters now — typing no longer wipes
+  // the user's selected chips. Kept as a function in case we add debouncing.
+  const handleQueryChange = (value) => setQuery(value);
 
   const featured = items[0];
   const rest = items.slice(1);
@@ -95,41 +118,84 @@ export function ExplorePage() {
             />
             <div className="flex flex-wrap gap-2">
               {visibleCategories.map((cat, i) => {
-                const isActive = active === cat.value;
+                const isActive = isFilterActive(cat.value);
+                // Per-chip dismiss "x" stays on real category chips so users
+                // can drop a single filter without scanning back to the chip.
                 const showDismiss = isActive && cat.value !== "all";
                 return (
                   <motion.button
                     key={cat.value}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={isActive}
+                    aria-label={
+                      cat.value === "all"
+                        ? "Show all categories"
+                        : `${isActive ? "Remove" : "Add"} ${cat.label} filter`
+                    }
                     initial={{ opacity: 0, y: 15, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: 0.2 + i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ scale: 1.1, y: -3 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setActive(cat.value)}
+                    whileHover={{ scale: 1.08, y: -3 }}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => toggleFilter(cat.value)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition ${
                       isActive
-                        ? "bg-accent text-accent-fg border-accent"
+                        ? "bg-accent text-accent-fg border-accent shadow-[0_4px_18px_-6px_rgb(var(--accent)/0.55)]"
                         : "bg-surface text-fg-muted border-line hover:border-line-strong hover:text-fg"
                     }`}
                   >
                     <Icon icon={cat.icon} /> {cat.label}
                     {showDismiss && (
-                      <span
-                        role="button"
-                        aria-label={`Clear ${cat.label} filter`}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${cat.label} filter`}
                         onClick={(e) => {
+                          // Stop the parent chip's onClick from firing — the
+                          // toggle would re-add the filter we just removed.
                           e.stopPropagation();
-                          setActive("all");
+                          toggleFilter(cat.value);
                         }}
-                        className="-mr-1 ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-accent-fg/20 transition"
+                        className="-mr-1 ml-0.5 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-accent-fg/20 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-fg/60"
                       >
                         <Icon icon="mdi:close" className="text-xs" />
-                      </span>
+                      </button>
                     )}
                   </motion.button>
                 );
               })}
             </div>
+
+            {/* Active-filter summary. Only renders when at least one category
+                filter is on so the "All" default stays visually quiet. */}
+            <AnimatePresence initial={false}>
+              {activeFilters.size > 0 && (
+                <motion.div
+                  key="active-summary"
+                  initial={{ opacity: 0, y: -4, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -4, height: 0 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center justify-between gap-3 text-xs text-fg-muted overflow-hidden"
+                  aria-live="polite"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-accent text-accent-fg font-bold text-[10px]">
+                      {activeFilters.size}
+                    </span>
+                    {activeFilters.size === 1 ? "filter" : "filters"} active
+                  </span>
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="inline-flex items-center gap-1 text-accent hover:underline font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+                  >
+                    <Icon icon="mdi:close-circle-outline" />
+                    Clear all
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
 
@@ -248,11 +314,12 @@ export function ExplorePage() {
                 : "Try a different category."}
             </p>
             <button
+              type="button"
               onClick={() => {
-                setActive("all");
+                clearAllFilters();
                 setQuery("");
               }}
-              className="mt-4 text-accent hover:underline font-medium"
+              className="mt-4 text-accent hover:underline font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
             >
               Reset filters
             </button>

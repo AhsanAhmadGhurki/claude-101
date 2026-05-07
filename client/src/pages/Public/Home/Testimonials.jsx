@@ -65,7 +65,7 @@ export function Testimonials() {
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-60px" }}
             transition={{ duration: 0.6 }}
             className="text-xs font-bold uppercase tracking-[0.3em] text-accent"
           >
@@ -74,7 +74,7 @@ export function Testimonials() {
           <motion.h2
             initial={{ opacity: 0, y: 60, filter: "blur(10px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, margin: "-60px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-60px" }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="mt-3 text-4xl sm:text-5xl font-bold text-fg leading-tight tracking-tight"
           >
@@ -83,7 +83,7 @@ export function Testimonials() {
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-60px" }}
             transition={{ delay: 0.1, duration: 0.7 }}
             className="text-fg-muted text-lg mt-4 leading-relaxed"
           >
@@ -94,7 +94,7 @@ export function Testimonials() {
         <motion.div
           initial={{ opacity: 0, x: 30 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
+          viewport={{ once: true, amount: 0.1, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.15 }}
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 lg:max-w-xl"
         >
@@ -122,7 +122,7 @@ export function Testimonials() {
             variants={card}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             whileHover={{ y: -6, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 280, damping: 22 }}
             className="rounded-3xl bg-surface border border-line surface-shadow p-6 flex flex-col gap-4 relative overflow-hidden group"

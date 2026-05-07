@@ -7,11 +7,13 @@ import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter
 import { Shake } from "../../components/ui/Shake";
 import { SuccessCheck } from "../../components/ui/SuccessCheck";
 import { scorePassword } from "../../services/auth/passwordStrength";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 // Reset flow now uses an OTP. The user arrives here from /forgot-password
 // (location.state.email) or via a deep link with ?email=... — we accept
 // both. The page collects email + 6-digit code + new password.
 export function ResetPasswordPage() {
+  usePageTitle("Reset password");
   const location = useLocation();
   const navigate = useNavigate();
   const [params] = useSearchParams();

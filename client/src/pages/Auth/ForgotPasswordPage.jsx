@@ -5,8 +5,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, ApiError } from "../../api/client";
 import { AuthShell } from "./AuthShell";
 import { Shake } from "../../components/ui/Shake";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export function ForgotPasswordPage() {
+  usePageTitle("Forgot password");
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);

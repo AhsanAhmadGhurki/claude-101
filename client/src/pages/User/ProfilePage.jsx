@@ -19,6 +19,7 @@ import { api, ApiError } from "../../api/client";
 import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
 import { Shake } from "../../components/ui/Shake";
 import { scorePassword } from "../../services/auth/passwordStrength";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const { Title, Text } = Typography;
 
@@ -234,6 +235,7 @@ function PasswordForm() {
 }
 
 export function ProfilePage() {
+  usePageTitle("Profile");
   const navigate = useNavigate();
 
   return (

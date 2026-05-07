@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/auth/authContext";
 import { api } from "../../api/client";
 import { ErrorState } from "../../components/ui/ErrorState";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const { Title, Text } = Typography;
 
@@ -48,6 +49,7 @@ function formatSavedAt(ts) {
 }
 
 export function DashboardPage() {
+  usePageTitle("Dashboard");
   const { user, signout } = useAuth();
   const navigate = useNavigate();
   // Controlled signout modal (mirrors Header) — see Header.jsx for the
