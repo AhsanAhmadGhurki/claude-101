@@ -62,6 +62,12 @@
     color: rgb(var(--fg));
     overflow-x: hidden;
     max-width: 100%;
+    /* `position: relative` here is required so Framer Motion's `useScroll`
+       hook can measure scroll progress against a non-static container.
+       Without it, the console emits "Please ensure that the container has
+       a non-static position" on every page that uses scroll-driven anims
+       (Hero parallax, TripDetails hero, CTA card). */
+    position: relative;
   }
 
   body {

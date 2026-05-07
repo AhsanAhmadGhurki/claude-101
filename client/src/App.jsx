@@ -37,15 +37,22 @@ const DashboardPage = lazy(() =>
   import("./pages/User/DashboardPage").then((m) => ({ default: m.DashboardPage }))
 );
 
+// Initial opacity is 0.01 (not 0) so a slow lazy-route chunk-load never
+// leaves the viewport fully black — the previous page is gone, the new
+// page is mounting, and even ~80ms of `opacity:0` reads as a flash to the
+// user. 0.01 is functionally invisible but skips the "is the app broken?"
+// perception.
 const pageVariants = {
-  initial: { opacity: 0 },
+  initial: { opacity: 0.01, y: 8 },
   animate: {
     opacity: 1,
+    y: 0,
     transition: { duration: 0.2, ease: "easeOut" },
   },
   exit: {
-    opacity: 0,
-    transition: { duration: 0.15, ease: "easeIn" },
+    opacity: 0.01,
+    y: -4,
+    transition: { duration: 0.12, ease: "easeIn" },
   },
 };
 

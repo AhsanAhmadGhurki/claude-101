@@ -538,6 +538,7 @@ export function Hero() {
                       }}
                       onPressEnter={handleSubmitClick}
                       disabled={departed}
+                      aria-label="Search destinations"
                       aria-invalid={emptyError}
                       aria-describedby={emptyError ? "hero-prompt-error" : undefined}
                       className="!bg-transparent !text-fg !text-[15px] !p-0 placeholder:!text-fg-subtle leading-none"

@@ -123,10 +123,14 @@ export function ExplorePage() {
                 // can drop a single filter without scanning back to the chip.
                 const showDismiss = isActive && cat.value !== "all";
                 return (
-                  <motion.button
+                  // motion.div (not motion.button) so the inner dismiss `<button>`
+                  // is not nested inside a button. Keyboard semantics are
+                  // preserved via role="checkbox" + tabIndex + an onKeyDown
+                  // that mirrors what a native button gives you for free.
+                  <motion.div
                     key={cat.value}
-                    type="button"
                     role="checkbox"
+                    tabIndex={0}
                     aria-checked={isActive}
                     aria-label={
                       cat.value === "all"
@@ -139,7 +143,13 @@ export function ExplorePage() {
                     whileHover={{ scale: 1.08, y: -3 }}
                     whileTap={{ scale: 0.92 }}
                     onClick={() => toggleFilter(cat.value)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition ${
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleFilter(cat.value);
+                      }
+                    }}
+                    className={`cursor-pointer select-none flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                       isActive
                         ? "bg-accent text-accent-fg border-accent shadow-[0_4px_18px_-6px_rgb(var(--accent)/0.55)]"
                         : "bg-surface text-fg-muted border-line hover:border-line-strong hover:text-fg"
@@ -161,7 +171,7 @@ export function ExplorePage() {
                         <Icon icon="mdi:close" className="text-xs" />
                       </button>
                     )}
-                  </motion.button>
+                  </motion.div>
                 );
               })}
             </div>

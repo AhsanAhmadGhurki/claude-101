@@ -305,9 +305,13 @@ export function Header() {
                 {NAV_LINKS.map((link, i) => (
                   <motion.div
                     key={link.to}
-                    initial={{ opacity: 0, x: 10 }}
+                    // Start at 0.5 opacity (not 0) so the drawer's slide-in
+                    // doesn't expose fully-invisible link labels for ~50ms
+                    // before each one fades up. Stagger kept tight so the
+                    // cascade still reads, just without the flicker.
+                    initial={{ opacity: 0.5, x: 6 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + i * 0.04, duration: 0.25 }}
+                    transition={{ delay: i * 0.025, duration: 0.18 }}
                   >
                     <NavLink
                       to={link.to}

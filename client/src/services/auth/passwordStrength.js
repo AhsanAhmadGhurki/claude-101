@@ -13,9 +13,21 @@ export function scorePassword(password) {
   if (/[^A-Za-z0-9]/.test(password)) score++;
 
   // Penalize obvious weak patterns even if the rules above were satisfied.
+  // Two tiers:
+  //   1) Exact-ish match (the password IS a weak word, with maybe a few
+  //      trailing digits/symbols on a short composition) → cap at "Weak".
+  //   2) Weak word as a substring of a longer composition that adds real
+  //      entropy (e.g. "Password123!") → soft penalty of one notch so the
+  //      remaining strength signal still shows.
   const weak = ["password", "12345", "qwerty", "letmein", "iloveyou", "admin"];
-  if (weak.some((w) => password.toLowerCase().includes(w))) {
+  const lower = password.toLowerCase();
+  const stripped = lower.replace(/[^a-z]+$/, "");
+  const isExactWeak =
+    weak.includes(lower) || (weak.includes(stripped) && password.length <= 10);
+  if (isExactWeak) {
     score = Math.min(score, 1);
+  } else if (weak.some((w) => lower.includes(w))) {
+    score = Math.max(0, score - 1);
   }
   if (/^(.)\1+$/.test(password)) score = 0;
 

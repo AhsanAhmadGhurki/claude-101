@@ -158,6 +158,10 @@ export function SignUpPage() {
             name="confirmPassword"
             label="Confirm password"
             dependencies={["password"]}
+            // Override the form-level "onSubmit" trigger so the mismatch
+            // error surfaces the moment the user blurs / re-types — they
+            // don't have to click Sign up to discover the typo.
+            validateTrigger={["onBlur", "onChange"]}
             rules={[
               { required: true, message: "Please confirm your password" },
               ({ getFieldValue }) => ({

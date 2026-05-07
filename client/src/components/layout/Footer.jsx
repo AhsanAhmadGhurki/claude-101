@@ -144,6 +144,7 @@ export function Footer() {
                 if (success) setSuccess(false);
               }}
               disabled={submitting}
+              aria-label="Email address for newsletter"
               aria-invalid={Boolean(error)}
               aria-describedby={
                 error
@@ -163,7 +164,15 @@ export function Footer() {
                 size="large"
                 htmlType="submit"
                 loading={submitting}
-                disabled={submitting || !email.trim()}
+                disabled={
+                  submitting ||
+                  !email.trim() ||
+                  // Format gate — keeps the button greyed out for clearly
+                  // invalid input ("notanemail"). The service still throws
+                  // on submit as a backstop, but disabling the button is
+                  // the affordance users actually notice.
+                  !/\S+@\S+\.\S+/.test(email)
+                }
                 icon={!submitting && <Icon icon="mdi:send-outline" />}
                 className="!font-semibold"
               >

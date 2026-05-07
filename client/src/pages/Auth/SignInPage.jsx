@@ -34,14 +34,35 @@ export function SignInPage() {
   const handleSubmit = async () => {
     if (locked) return;
     setTopError(null);
-    // Explicitly validate every field (Antd equivalent of form.trigger())
-    // so empty/invalid fields surface inline errors on the first submit.
+
+    // Defense in depth: even with Antd rules, browsers (autofill, paste)
+    // can submit values the form library hasn't seen yet. Re-check raw
+    // values *before* hitting the wire and inject inline errors if any
+    // basic check fails. This guarantees the API is never called with
+    // empty / malformed credentials.
+    const raw = form.getFieldsValue(["email", "password"]);
+    const inlineErrors = [];
+    if (!raw.email?.trim()) {
+      inlineErrors.push({ name: "email", errors: ["Email is required"] });
+    } else if (!/\S+@\S+\.\S+/.test(raw.email)) {
+      inlineErrors.push({ name: "email", errors: ["Enter a valid email"] });
+    }
+    if (!raw.password) {
+      inlineErrors.push({ name: "password", errors: ["Password is required"] });
+    }
+    if (inlineErrors.length) {
+      form.setFields(inlineErrors);
+      form.scrollToField(inlineErrors[0].name);
+      setShakeKey((k) => k + 1);
+      return;
+    }
+
+    // Antd's own rules still run (and re-validate things like email format
+    // with i18n etc.) — this stays as the canonical gate.
     let values;
     try {
       values = await form.validateFields();
     } catch (errInfo) {
-      // Scroll the first invalid field into view so the error message is
-      // visible even on short viewports.
       if (errInfo?.errorFields?.length) {
         form.scrollToField(errInfo.errorFields[0].name);
       }
