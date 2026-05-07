@@ -18,7 +18,7 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   // CLIENT_ORIGIN may be a single origin or a comma-separated list — typical
-  // production setup needs the local dev origin, the Vercel preview origin,
+  // production setup needs the local dev origin, any preview/staging origins,
   // and the production domain all permitted.
   const allowedOrigins = String(env.clientOrigin)
     .split(",")
