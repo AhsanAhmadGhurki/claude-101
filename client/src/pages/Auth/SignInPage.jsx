@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Input, Button, Alert } from "antd";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Icon } from "@iconify/react";
@@ -13,6 +13,7 @@ import { usePageTitle } from "../../hooks/usePageTitle";
 // warn at 3 to give the user a chance to slow down or use forgot-password
 // before they hit the actual lockout.
 const FAILURE_WARN_THRESHOLD = 3;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignInPage() {
   usePageTitle("Sign in");
@@ -24,69 +25,95 @@ export function SignInPage() {
   const [topError, setTopError] = useState(null);
   const [shakeKey, setShakeKey] = useState(0);
   const [failedAttempts, setFailedAttempts] = useState(0);
+  // Component-owned error state. We render these as inline <p> elements so
+  // visibility doesn't depend on Antd's internal Form.ErrorList rendering
+  // (which can be themed away by ConfigProvider tokens). Antd's own rules
+  // still run as a second layer — both can coexist without conflict.
+  const [errors, setErrors] = useState({});
   // Set when the server returns 429 — disables the form until the timer
   // expires. Defaults to 15 minutes to match the server window.
   const [lockedUntil, setLockedUntil] = useState(null);
+  // Re-render tick so the "locked" check stays current as the lockout window
+  // counts down. Lives outside the render to keep Date.now() out of the body.
+  const [, forceTick] = useState(0);
+
+  useEffect(() => {
+    if (!lockedUntil) return undefined;
+    const id = setInterval(() => {
+      if (Date.now() >= lockedUntil) {
+        setLockedUntil(null);
+        clearInterval(id);
+      } else {
+        forceTick((n) => n + 1);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
+
+  // The effect above clears `lockedUntil` to null the moment the window
+  // expires, so truthiness alone reflects "currently locked" without calling
+  // Date.now() in the render body.
+  const locked = Boolean(lockedUntil);
 
   const redirectTo = location.state?.from?.pathname || "/dashboard";
-  const locked = lockedUntil && Date.now() < lockedUntil;
 
+  function validate(values) {
+    const next = {};
+    const email = (values.email ?? "").trim();
+    const password = values.password ?? "";
+    if (!email) {
+      next.email = "Email is required";
+    } else if (!EMAIL_RE.test(email)) {
+      next.email = "Please enter a valid email address";
+    }
+    if (!password) {
+      next.password = "Password is required";
+    }
+    return next;
+  }
+
+  // Use the button's onClick (not Form's onFinish) so our own validation
+  // always runs — Antd's onFinish is suppressed when its internal validation
+  // fails, which would silently swallow the click before our handler runs.
   const handleSubmit = async () => {
-    if (locked) return;
+    if (locked || submitting) return;
     setTopError(null);
 
-    // Defense in depth: even with Antd rules, browsers (autofill, paste)
-    // can submit values the form library hasn't seen yet. Re-check raw
-    // values *before* hitting the wire and inject inline errors if any
-    // basic check fails. This guarantees the API is never called with
-    // empty / malformed credentials.
     const raw = form.getFieldsValue(["email", "password"]);
-    const inlineErrors = [];
-    if (!raw.email?.trim()) {
-      inlineErrors.push({ name: "email", errors: ["Email is required"] });
-    } else if (!/\S+@\S+\.\S+/.test(raw.email)) {
-      inlineErrors.push({ name: "email", errors: ["Enter a valid email"] });
-    }
-    if (!raw.password) {
-      inlineErrors.push({ name: "password", errors: ["Password is required"] });
-    }
-    if (inlineErrors.length) {
-      form.setFields(inlineErrors);
-      form.scrollToField(inlineErrors[0].name);
+    const nextErrors = validate(raw);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
       setShakeKey((k) => k + 1);
+      // Focus the first invalid field so keyboard users can re-type without
+      // hunting for the input.
+      const firstField = nextErrors.email ? "email" : "password";
+      try {
+        form.scrollToField(firstField);
+      } catch {
+        // Antd scroll throws if the field isn't registered yet — ignore.
+      }
       return;
     }
 
-    // Antd's own rules still run (and re-validate things like email format
-    // with i18n etc.) — this stays as the canonical gate.
-    let values;
-    try {
-      values = await form.validateFields();
-    } catch (errInfo) {
-      if (errInfo?.errorFields?.length) {
-        form.scrollToField(errInfo.errorFields[0].name);
-      }
-      setShakeKey((k) => k + 1);
-      return;
-    }
     setSubmitting(true);
     try {
+      const values = { email: raw.email.trim(), password: raw.password };
       await signin(values);
       setFailedAttempts(0);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setShakeKey((k) => k + 1);
-      // Special case: account exists but email isn't verified — offer a path
-      // to re-send the verification email rather than just showing an error.
       if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
         navigate("/verify-email", {
           replace: true,
-          state: { email: values.email, fromSignin: true },
+          state: { email: raw.email, fromSignin: true },
         });
         return;
       }
-      // Server-side rate limit hit — disable the form and stop counting.
-      if (err instanceof ApiError && (err.status === 429 || err.code === "RATE_LIMITED")) {
+      if (
+        err instanceof ApiError &&
+        (err.status === 429 || err.code === "RATE_LIMITED")
+      ) {
         setLockedUntil(Date.now() + 15 * 60 * 1000);
         setTopError(
           err.message ||
@@ -94,22 +121,28 @@ export function SignInPage() {
         );
         return;
       }
-      // Real auth failure (bad credentials, etc.) — bump the counter so the
-      // warning banner can appear before the server lockout fires.
       setFailedAttempts((n) => n + 1);
       if (err instanceof ApiError && err.details) {
-        form.setFields(
-          Object.entries(err.details).map(([name, message]) => ({
-            name,
-            errors: [message],
-          }))
-        );
+        // Map per-field server errors into our local state so they render
+        // alongside any client-side validation messages.
+        setErrors((prev) => ({ ...prev, ...err.details }));
       } else {
         setTopError(err.message || "Could not sign in. Try again.");
       }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Clear a field's error as soon as the user starts editing it so the red
+  // ring disappears on the next keystroke.
+  const clearFieldError = (field) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const showWarning = !locked && failedAttempts >= FAILURE_WARN_THRESHOLD;
@@ -153,7 +186,7 @@ export function SignInPage() {
                 <Link to="/forgot-password" className="font-semibold underline">
                   reset your password
                 </Link>{" "}
-                if you've forgotten it.
+                if you&apos;ve forgotten it.
               </span>
             }
             className="!mb-4"
@@ -168,7 +201,7 @@ export function SignInPage() {
             title={`${failedAttempts} failed attempts — you'll be locked out after 5`}
             description={
               <span>
-                If you've forgotten your password, use{" "}
+                If you&apos;ve forgotten your password, use{" "}
                 <Link
                   to="/forgot-password"
                   className="font-semibold underline"
@@ -186,42 +219,55 @@ export function SignInPage() {
           form={form}
           layout="vertical"
           requiredMark={false}
-          onFinish={handleSubmit}
-          onFinishFailed={() => setShakeKey((k) => k + 1)}
-          // Errors only appear once the user explicitly submits, instead
-          // of yelling at them while they're mid-typing.
-          validateTrigger="onSubmit"
+          // Block native form submission entirely — `handleSubmit` is wired
+          // to the button's onClick so our validation runs even when Antd's
+          // own Field rules would otherwise swallow the submit event.
+          onFinish={(e) => e?.preventDefault?.()}
           disabled={submitting || locked}
           autoComplete="on"
         >
           <Form.Item
             name="email"
             label="Email"
-            rules={[
-              { required: true, message: "Please enter your email" },
-              { type: "email", message: "Enter a valid email" },
-            ]}
+            // help/validateStatus drive Antd's own inline error UI. We feed
+            // them from local state so both the controlled ring and Antd's
+            // ErrorList are in sync.
+            validateStatus={errors.email ? "error" : undefined}
+            help={errors.email}
           >
-            <Input size="large" placeholder="you@example.com" autoComplete="email" />
+            <Input
+              size="large"
+              placeholder="you@example.com"
+              autoComplete="email"
+              aria-invalid={Boolean(errors.email)}
+              onChange={() => clearFieldError("email")}
+            />
           </Form.Item>
 
           <Form.Item
             name="password"
             label="Password"
-            rules={[{ required: true, message: "Please enter your password" }]}
+            validateStatus={errors.password ? "error" : undefined}
+            help={errors.password}
           >
             <Input.Password
               size="large"
               placeholder="••••••••"
               autoComplete="current-password"
+              aria-invalid={Boolean(errors.password)}
+              onChange={() => clearFieldError("password")}
+              onPressEnter={handleSubmit}
             />
           </Form.Item>
 
           <Button
             type="primary"
-            htmlType="submit"
+            // Plain button (not htmlType="submit") so we own the validation
+            // flow without fighting Antd's Form.onFinish suppression.
+            htmlType="button"
             size="large"
             loading={submitting}
+            onClick={handleSubmit}
             block
           >
             Sign in

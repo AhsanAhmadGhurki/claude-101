@@ -100,24 +100,96 @@
     box-shadow: 0 1px 2px rgb(var(--shadow-color) / 0.06),
       0 24px 64px -24px rgb(var(--shadow-color) / 0.18);
   }
+  /* Hide scrollbars while keeping scrollability — used for horizontal
+     overflow rows on mobile (day nav, action rails). */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-/* Global keyboard focus indicator. Targets every interactive element so
-   keyboard users can always see where they are without us having to
-   remember focus-visible:ring-2 on individual components. The :focus-visible
-   pseudo only fires for keyboard focus, so mouse clicks don't get the ring. */
+/* Print styles. Strip the cinematic chrome and produce a clean, paper-
+   friendly version of the trip page. Buttons and nav rails are hidden
+   via the `trip-hide-print` class; the hero collapses to plain text so
+   the parallax image, gradient overlay, and badges don't waste ink. */
+@media print {
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  header,
+  footer,
+  .trip-hide-print {
+    display: none !important;
+  }
+  .trip-hero {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 1rem 0 !important;
+  }
+  .trip-hero img,
+  .trip-hero [class*="bg-gradient"] {
+    display: none !important;
+  }
+  .trip-hero-actions {
+    display: none !important;
+  }
+  .trip-hero h1 {
+    color: #111 !important;
+    -webkit-text-fill-color: #111 !important;
+    text-shadow: none !important;
+    font-size: 2rem !important;
+  }
+  .trip-hero p,
+  .trip-hero div {
+    color: #333 !important;
+  }
+  .trip-day {
+    page-break-inside: avoid;
+  }
+  .trip-day-image {
+    display: none !important;
+  }
+  .trip-day > div {
+    grid-column: 1 / -1 !important;
+  }
+  a[href]::after {
+    content: "" !important;
+  }
+}
+
+/* Global keyboard focus indicator. Targets interactive elements that DON'T
+   already have their own focus affordance. Text inputs and textareas are
+   excluded because they sit inside cards/wrappers that use
+   `focus-within:border-accent` to draw the focus cue — adding a second
+   lime ring on the input itself produces a confusing double border.
+   :focus-visible only fires for keyboard focus, so mouse clicks don't get
+   the ring. */
 @layer base {
   a:focus-visible,
   button:focus-visible,
   [role="button"]:focus-visible,
   [role="menuitem"]:focus-visible,
   [role="link"]:focus-visible,
-  input:focus-visible,
-  textarea:focus-visible,
-  select:focus-visible,
+  [role="checkbox"]:focus-visible,
   summary:focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px rgb(var(--bg)), 0 0 0 4px theme("colors.lime.400");
     border-radius: 0.375rem;
+  }
+
+  /* For Antd-styled inputs in standalone forms (signin, signup, etc.) we
+     let Antd's own theme tokens draw the focus ring — it already matches
+     the brand accent. Borderless inputs inside our custom cards get nothing
+     because the parent card's focus-within: state handles it. */
+  .ant-input-borderless:focus,
+  .ant-input-borderless:focus-within,
+  textarea.ant-input-borderless:focus,
+  textarea.ant-input-borderless:focus-within {
+    box-shadow: none !important;
+    outline: none !important;
   }
 }

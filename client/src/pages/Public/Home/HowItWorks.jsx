@@ -84,8 +84,8 @@ export function HowItWorks() {
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "-8%"]);
 
   return (
-    <section ref={sectionRef} className="relative px-6 py-28 sm:py-32">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-start">
+    <section ref={sectionRef} className="relative px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-start">
         <div className="lg:sticky lg:top-32">
           <motion.div
             variants={containerVariants}
@@ -177,7 +177,7 @@ export function HowItWorks() {
                 viewport={{ once: true, amount: 0.1 }}
                 transition={{ delay: 0.3 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 aria-hidden
-                className="absolute -right-3 -top-6 text-[9rem] font-bold text-fg/[0.04] leading-none pointer-events-none select-none"
+                className="absolute right-0 -top-2 sm:-right-3 sm:-top-6 text-[5rem] sm:text-[7rem] lg:text-[9rem] font-bold text-fg/[0.04] leading-none pointer-events-none select-none"
               >
                 {step.num}
               </motion.span>

@@ -48,7 +48,7 @@ const STATS = [
 ];
 
 const card = {
-  hidden: { opacity: 0, y: 40, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 40, filter: "blur(4px)" },
   show: (i) => ({
     opacity: 1,
     y: 0,
@@ -59,8 +59,8 @@ const card = {
 
 export function Testimonials() {
   return (
-    <section className="px-6 sm:px-8 max-w-7xl mx-auto py-24 sm:py-28">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+    <section className="px-4 sm:px-8 max-w-7xl mx-auto py-16 sm:py-24 lg:py-28">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8 sm:mb-12">
         <div className="max-w-2xl">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
@@ -72,7 +72,7 @@ export function Testimonials() {
             From the trail
           </motion.span>
           <motion.h2
-            initial={{ opacity: 0, y: 60, filter: "blur(10px)" }}
+            initial={{ opacity: 0, y: 60, filter: "blur(5px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.1, margin: "-60px" }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}

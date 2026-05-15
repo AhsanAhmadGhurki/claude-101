@@ -132,7 +132,7 @@ export function Footer() {
           <p className="text-sm text-fg-muted mt-2 leading-relaxed">
             One short email a month — new destinations, route updates, and seasonal tips.
           </p>
-          <form onSubmit={handleSubscribe} className="mt-3 flex gap-2" noValidate>
+          <form onSubmit={handleSubscribe} className="mt-3 flex gap-2 items-stretch" noValidate>
             <Input
               type="email"
               size="large"
@@ -153,7 +153,7 @@ export function Footer() {
                   ? "newsletter-success"
                   : undefined
               }
-              className="!bg-surface-2"
+              className="!h-12 !bg-surface-2"
             />
             <motion.div
               whileHover={submitting ? undefined : { scale: 1.04 }}
@@ -164,17 +164,12 @@ export function Footer() {
                 size="large"
                 htmlType="submit"
                 loading={submitting}
-                disabled={
-                  submitting ||
-                  !email.trim() ||
-                  // Format gate — keeps the button greyed out for clearly
-                  // invalid input ("notanemail"). The service still throws
-                  // on submit as a backstop, but disabling the button is
-                  // the affordance users actually notice.
-                  !/\S+@\S+\.\S+/.test(email)
-                }
+                // Stay clickable even on invalid input so submitting surfaces
+                // the inline validation error. The service rejects bad emails
+                // and the UI renders that as a red banner under the form.
+                disabled={submitting}
                 icon={!submitting && <Icon icon="mdi:send-outline" />}
-                className="!font-semibold"
+                className="!font-semibold !h-12"
               >
                 {submitting ? "Subscribing…" : "Subscribe"}
               </Button>
@@ -210,7 +205,7 @@ export function Footer() {
                   className="text-xs text-emerald-400 mt-2 flex items-center gap-1.5"
                 >
                   <Icon icon="mdi:check-circle-outline" className="text-sm" />
-                  You're on the list — see you in your inbox soon.
+                  You&apos;re subscribed! 🎉 See you in your inbox soon.
                 </motion.p>
               ) : (
                 <motion.p

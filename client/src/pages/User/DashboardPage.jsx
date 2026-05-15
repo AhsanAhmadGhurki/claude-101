@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   Avatar,
@@ -13,31 +13,15 @@ import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/auth/authContext";
-import { api } from "../../api/client";
-import { ErrorState } from "../../components/ui/ErrorState";
+import { useSavedTrips } from "../../hooks/useSavedTrips";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
 const { Title, Text } = Typography;
 
-function flattenTrip(serverTrip) {
-  const payload = serverTrip?.payload ?? {};
-  return {
-    ...payload,
-    id: serverTrip.id,
-    destination: serverTrip.destination ?? payload.destination,
-    region: serverTrip.region ?? payload.region,
-    tripType: serverTrip.tripType ?? payload.tripType,
-    duration: serverTrip.duration,
-    summary: serverTrip.summary ?? payload.summary,
-    shareId: serverTrip.shareId,
-    savedAt: serverTrip.savedAt,
-  };
-}
-
 function formatSavedAt(ts) {
-  if (!ts) return "Saved";
+  if (!ts) return "—";
   const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return "Saved";
+  if (Number.isNaN(d.getTime())) return "—";
   const diffMin = Math.round((Date.now() - d.getTime()) / 60000);
   if (diffMin < 1) return "just now";
   if (diffMin < 60) return `${diffMin}m ago`;
@@ -52,73 +36,21 @@ export function DashboardPage() {
   usePageTitle("Dashboard");
   const { user, signout } = useAuth();
   const navigate = useNavigate();
-  // Controlled signout modal (mirrors Header) — see Header.jsx for the
-  // reasoning behind avoiding Modal.confirm here.
+  const { trips, favorites } = useSavedTrips();
+
   const [signoutModalOpen, setSignoutModalOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
-  // Dashboard data is split into two parallel fetches so a transient failure
-  // on either side doesn't blank the whole page — each section retries
-  // independently.
-  const [stats, setStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState(null);
-
-  const [recentTrips, setRecentTrips] = useState([]);
-  const [tripsLoading, setTripsLoading] = useState(true);
-  const [tripsError, setTripsError] = useState(null);
-
-  const loadStats = useCallback(async () => {
-    setStatsLoading(true);
-    setStatsError(null);
-    try {
-      const data = await api.dashboard();
-      setStats(data.stats ?? null);
-    } catch (err) {
-      setStatsError(err);
-    } finally {
-      setStatsLoading(false);
-    }
-  }, []);
-
-  const loadTrips = useCallback(async () => {
-    setTripsLoading(true);
-    setTripsError(null);
-    try {
-      const { trips } = await api.listTrips();
-      const flattened = (trips ?? []).map(flattenTrip);
-      flattened.sort(
-        (a, b) =>
-          new Date(b.savedAt ?? 0).getTime() -
-          new Date(a.savedAt ?? 0).getTime()
-      );
-      setRecentTrips(flattened.slice(0, 3));
-    } catch (err) {
-      setTripsError(err);
-    } finally {
-      setTripsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadStats();
-    loadTrips();
-  }, [loadStats, loadTrips]);
-
-  const tripCount = stats?.count ?? recentTrips.length;
-  const lastSavedLabel = stats?.lastSavedAt
-    ? formatSavedAt(stats.lastSavedAt)
-    : recentTrips[0]?.savedAt
+  const recentTrips = trips.slice(0, 3);
+  const tripCount = trips.length;
+  const destinationCount = new Set(
+    trips
+      .map((t) => (t.input?.destination ?? "").trim().toLowerCase())
+      .filter(Boolean)
+  ).size;
+  const lastSavedLabel = recentTrips[0]?.savedAt
     ? formatSavedAt(recentTrips[0].savedAt)
     : "—";
-
-  const openSavedTrip = (trip) => {
-    sessionStorage.setItem(
-      "lastTrip",
-      JSON.stringify({ ...trip, serverId: trip.id, savedFromServer: true })
-    );
-    navigate(`/trip/${trip.id}`);
-  };
 
   const requestSignout = () => setSignoutModalOpen(true);
 
@@ -168,8 +100,8 @@ export function DashboardPage() {
               type="warning"
               showIcon
               icon={<Icon icon="mdi:email-alert-outline" />}
-              title="Email not verified — saving and editing trips is disabled"
-              description="We sent a verification link to your inbox. Confirm it to unlock saving trips, sharing links, and editing your library."
+              message="Email not verified"
+              description="Verify your email to keep your account active."
               action={
                 <Button
                   type="primary"
@@ -182,43 +114,26 @@ export function DashboardPage() {
             />
           )}
 
-          {statsError && (
-            <div className="mt-6">
-              <ErrorState
-                title="Couldn't load your dashboard stats"
-                message={
-                  statsError?.message ||
-                  "We couldn't reach the server. Try again."
-                }
-                onRetry={loadStats}
-                retrying={statsLoading}
-              />
-            </div>
-          )}
-
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Stat
               icon="mdi:bookmark-multiple-outline"
               label={tripCount === 1 ? "Saved trip" : "Saved trips"}
-              value={statsLoading ? "…" : tripCount}
+              value={tripCount}
+            />
+            <Stat
+              icon="mdi:heart-outline"
+              label="Favourites"
+              value={favorites.length}
             />
             <Stat
               icon="mdi:map-marker-radius-outline"
               label="Destinations"
-              value={
-                statsLoading
-                  ? "…"
-                  : new Set(
-                      recentTrips
-                        .map((t) => (t?.destination ?? "").trim().toLowerCase())
-                        .filter(Boolean)
-                    ).size || (stats?.lastDestination ? 1 : 0)
-              }
+              value={destinationCount}
             />
             <Stat
               icon="mdi:calendar-clock-outline"
-              label="Last saved"
-              value={statsLoading ? "…" : lastSavedLabel}
+              label="Last generated"
+              value={lastSavedLabel}
             />
           </div>
 
@@ -248,7 +163,7 @@ export function DashboardPage() {
               onClick={() => navigate("/explore")}
               icon={<Icon icon="mdi:compass-outline" />}
             >
-              Explore destinations
+              Explore
             </Button>
             <Button
               size="large"
@@ -275,10 +190,11 @@ export function DashboardPage() {
                 Recent trips
               </Title>
               <Text className="!text-fg-muted text-sm">
-                Your last {Math.min(recentTrips.length, 3)} saved {recentTrips.length === 1 ? "trip" : "trips"}
+                Your last {Math.min(recentTrips.length, 3)} generated{" "}
+                {recentTrips.length === 1 ? "trip" : "trips"}
               </Text>
             </div>
-            {!tripsLoading && !tripsError && tripCount > 3 && (
+            {tripCount > 3 && (
               <Button
                 type="link"
                 onClick={() => navigate("/saved-trips")}
@@ -288,56 +204,37 @@ export function DashboardPage() {
               </Button>
             )}
           </div>
-          {tripsLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-24 rounded-2xl bg-surface-2 border border-line animate-pulse"
-                />
-              ))}
-            </div>
-          ) : tripsError ? (
-            <ErrorState
-              title="Couldn't load recent trips"
-              message={
-                tripsError?.message ||
-                "We couldn't reach the server. Try again."
-              }
-              onRetry={loadTrips}
-              retrying={tripsLoading}
-            />
-          ) : recentTrips.length === 0 ? (
+          {recentTrips.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-line bg-surface/40 p-6 text-center">
               <Icon
                 icon="mdi:bookmark-outline"
                 className="text-3xl text-fg-subtle mx-auto mb-2"
               />
               <p className="text-sm text-fg-muted">
-                You haven't saved any trips yet. Plan one and tap{" "}
-                <span className="font-semibold text-fg">Save</span> on the
-                itinerary to see it here.
+                You haven't generated any trips yet. Tap{" "}
+                <span className="font-semibold text-fg">Plan a new trip</span>{" "}
+                to get started.
               </p>
             </div>
           ) : (
             <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {recentTrips.map((trip) => (
-                <li key={trip.id ?? trip.destination}>
+                <li key={trip.tripId}>
                   <button
                     type="button"
-                    onClick={() => openSavedTrip(trip)}
+                    onClick={() => navigate(`/trip/${trip.tripId}`)}
                     className="w-full text-left rounded-2xl bg-surface-2 border border-line p-4 hover:border-accent/60 transition group"
                   >
                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
-                      {trip.tripType && <span>{trip.tripType}</span>}
-                      {trip.tripType && trip.days?.length ? <span>·</span> : null}
+                      {trip.input?.travelStyle && <span>{trip.input.travelStyle}</span>}
+                      {trip.input?.travelStyle && trip.days?.length ? <span>·</span> : null}
                       {trip.days?.length ? <span>{trip.days.length}-day</span> : null}
                     </div>
                     <h3 className="mt-1.5 text-base font-semibold text-fg line-clamp-1 group-hover:text-accent transition">
-                      {trip.destination ?? "Untitled trip"}
+                      {trip.tripTitle || trip.input?.destination || "Untitled trip"}
                     </h3>
                     <div className="mt-2 flex items-center gap-1.5 text-xs text-fg-subtle">
-                      <Icon icon="mdi:bookmark-outline" />
+                      <Icon icon="mdi:clock-outline" />
                       {formatSavedAt(trip.savedAt)}
                     </div>
                   </button>

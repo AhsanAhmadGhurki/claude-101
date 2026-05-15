@@ -12,9 +12,15 @@
     />
     <title>Adventure.AI — Plan less. Wander more.</title>
     <script>
+      // Keep these in sync with client/src/theme/storageKey.js. We can't
+      // import that module here — this runs before the bundle loads — but
+      // ThemeProvider's mount effect migrates the legacy key into the
+      // canonical one so this script only needs to fall back, not write.
       (function () {
         try {
-          var stored = localStorage.getItem("adventure.theme");
+          var stored =
+            localStorage.getItem("theme") ||
+            localStorage.getItem("adventure.theme");
           var prefersDark =
             window.matchMedia &&
             window.matchMedia("(prefers-color-scheme: dark)").matches;

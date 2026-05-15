@@ -9,6 +9,7 @@ export function ErrorState({
   message = "We couldn't load this. Check your connection and try again.",
   onRetry,
   retrying = false,
+  retryLabel = "Try again",
   className = "",
 }) {
   return (
@@ -34,7 +35,7 @@ export function ErrorState({
           onClick={onRetry}
           className="!mt-5 !font-semibold"
         >
-          Try again
+          {retryLabel}
         </Button>
       )}
     </motion.div>

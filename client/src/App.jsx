@@ -102,19 +102,6 @@ function App() {
               </AnimatedPage>
             }
           />
-          {/* Public share link — no auth required. Renders the same
-              page in share mode (Save/Edit hidden, fetched via the
-              public /api/trips/share endpoint). */}
-          <Route
-            path="/trip/share/:id"
-            element={
-              <AnimatedPage>
-                <Suspense fallback={<PageLoader label="Loading trip…" />}>
-                  <TripDetailsPage mode="share" />
-                </Suspense>
-              </AnimatedPage>
-            }
-          />
           <Route path="/privacy" element={<AnimatedPage><PrivacyPage /></AnimatedPage>} />
           <Route path="/terms" element={<AnimatedPage><TermsPage /></AnimatedPage>} />
           <Route path="/resources/visa" element={<AnimatedPage><VisaPage /></AnimatedPage>} />
@@ -153,13 +140,12 @@ function App() {
               </AnimatedPage>
             }
           />
+          {/* Saved trips live in localStorage — no auth required. */}
           <Route
             path="/saved-trips"
             element={
               <AnimatedPage>
-                <ProtectedRoute>
-                  <SavedTripsPage />
-                </ProtectedRoute>
+                <SavedTripsPage />
               </AnimatedPage>
             }
           />

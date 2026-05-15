@@ -180,7 +180,7 @@ export function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative h-screen min-h-[780px] w-full overflow-hidden"
+      className="relative h-screen min-h-[640px] sm:min-h-[720px] lg:min-h-[780px] w-full overflow-hidden"
     >
       <motion.div
         style={{
@@ -234,9 +234,9 @@ export function Hero() {
 
       <motion.div
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 h-full grid md:grid-cols-12 gap-8 lg:gap-12 items-center px-6 sm:px-10 max-w-7xl mx-auto pt-24 pb-20"
+        className="relative z-10 h-full grid lg:grid-cols-12 gap-8 lg:gap-12 items-center px-6 sm:px-10 max-w-7xl mx-auto pt-24 pb-20"
       >
-        <div className="md:col-span-7">
+        <div className="lg:col-span-7">
           <motion.div
             initial={{ opacity: 0, y: -20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -513,7 +513,7 @@ export function Hero() {
                 {/* Single-row swipe-input track */}
                 <div
                   ref={trackRef}
-                  className="relative h-14 rounded-xl bg-surface-2/80 border border-line overflow-hidden select-none"
+                  className="relative h-14 rounded-xl bg-surface-2/80 border border-line overflow-hidden select-none focus-within:border-accent transition-colors"
                 >
                   {/* Progress fill behind everything */}
                   <motion.div
@@ -607,14 +607,14 @@ export function Hero() {
                 <motion.p
                   id="hero-prompt-error"
                   role="alert"
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-2 text-xs text-red-400 flex items-center gap-1.5"
+                  transition={{ duration: 0.25 }}
+                  className="mt-2 text-sm font-semibold text-red-400 flex items-center gap-1.5 drop-shadow"
                 >
-                  <Icon icon="mdi:alert-circle-outline" className="text-sm" />
-                  Please describe your trip
+                  <Icon icon="mdi:alert-circle-outline" className="text-base" />
+                  Tell us where you want to go!
                 </motion.p>
               )}
             </AnimatePresence>
@@ -655,7 +655,7 @@ export function Hero() {
           </motion.div>
         </div>
 
-        <div className="hidden md:flex md:col-span-5 justify-end items-center">
+        <div className="hidden lg:flex lg:col-span-5 justify-end items-center">
           <motion.div
             initial={{ opacity: 0, y: 80, rotate: -6, scale: 0.85 }}
             animate={{ opacity: 1, y: 0, rotate: 2, scale: 1 }}

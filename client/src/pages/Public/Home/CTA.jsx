@@ -11,7 +11,7 @@ const stagger = {
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 50, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 50, filter: "blur(4px)" },
   visible: {
     opacity: 1,
     y: 0,
@@ -45,10 +45,10 @@ export function CTA() {
   const cardRotate = useTransform(scrollYProgress, [0, 0.5], [2, 0]);
 
   return (
-    <section ref={ref} className="relative px-6 pb-24 sm:pb-28 max-w-7xl mx-auto">
+    <section ref={ref} className="relative px-4 sm:px-6 pb-16 sm:pb-24 lg:pb-28 max-w-7xl mx-auto">
       <motion.div
         style={{ y: cardY, rotate: cardRotate }}
-        initial={{ opacity: 0, y: 80, scale: 0.92, filter: "blur(10px)" }}
+        initial={{ opacity: 0, y: 80, scale: 0.92, filter: "blur(5px)" }}
         whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
         viewport={{ once: true, amount: 0.1, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -61,7 +61,7 @@ export function CTA() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.1, margin: "-80px" }}
-            className="lg:col-span-7 px-8 py-14 sm:px-14 sm:py-20"
+            className="lg:col-span-7 px-6 sm:px-10 lg:px-14 py-10 sm:py-14 lg:py-20"
           >
             <motion.span
               variants={fadeUp}
@@ -151,9 +151,11 @@ export function CTA() {
                   icon={
                     user ? (
                       <Icon icon="mdi:bookmark-outline" />
-                    ) : undefined
+                    ) : (
+                      <Icon icon="mdi:compass-outline" />
+                    )
                   }
-                  className="!h-12 !px-7 !text-base !font-semibold"
+                  className="!h-12 !px-7 !text-base !font-semibold !border-2 !border-accent !text-accent hover:!bg-accent hover:!text-accent-fg hover:!border-accent transition-colors"
                 >
                   {user ? "View saved trips" : "Explore routes"}
                 </Button>

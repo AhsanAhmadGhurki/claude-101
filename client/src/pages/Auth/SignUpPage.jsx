@@ -9,6 +9,8 @@ import { Shake } from "../../components/ui/Shake";
 import { scorePassword } from "../../services/auth/passwordStrength";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function SignUpPage() {
   usePageTitle("Create account");
   const { signup } = useAuth();
@@ -17,48 +19,94 @@ export function SignUpPage() {
   const [submitting, setSubmitting] = useState(false);
   const [topError, setTopError] = useState(null);
   const [shakeKey, setShakeKey] = useState(0);
+  // Component-owned error state. Renders alongside Antd's own ErrorList so
+  // visibility doesn't depend on Form internals — see SignInPage for the
+  // same pattern + reasoning.
+  const [errors, setErrors] = useState({});
   // Watch password value so the strength meter updates live.
   const password = Form.useWatch("password", form) || "";
 
+  function validate(values) {
+    const next = {};
+    const name = (values.name ?? "").trim();
+    const email = (values.email ?? "").trim();
+    const pw = values.password ?? "";
+    const confirmPw = values.confirmPassword ?? "";
+
+    if (!name) next.name = "Name is required";
+    else if (name.length < 2) next.name = "Name must be at least 2 characters";
+
+    if (!email) {
+      next.email = "Email is required";
+    } else if (!EMAIL_RE.test(email)) {
+      next.email = "Please enter a valid email address";
+    }
+
+    if (!pw) {
+      next.password = "Password is required";
+    } else if (pw.length < 8) {
+      next.password = "At least 8 characters";
+    } else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(pw)) {
+      next.password = "Must include a letter and a number";
+    } else if (scorePassword(pw).score < 2) {
+      next.password = "Choose a stronger password";
+    }
+
+    if (!confirmPw) {
+      next.confirmPassword = "Please confirm your password";
+    } else if (pw && pw !== confirmPw) {
+      next.confirmPassword = "Passwords do not match";
+    }
+
+    return next;
+  }
+
   const handleSubmit = async () => {
+    if (submitting) return;
     setTopError(null);
-    // Explicitly validate every field (Antd equivalent of form.trigger())
-    // so empty/invalid fields surface inline errors on the first submit.
-    let values;
-    try {
-      values = await form.validateFields();
-    } catch (errInfo) {
-      // Scroll the first invalid field into view so the error message is
-      // visible even on short viewports.
-      if (errInfo?.errorFields?.length) {
-        form.scrollToField(errInfo.errorFields[0].name);
-      }
+
+    const raw = form.getFieldsValue([
+      "name",
+      "email",
+      "password",
+      "confirmPassword",
+    ]);
+    const nextErrors = validate(raw);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
       setShakeKey((k) => k + 1);
+      const firstField = ["name", "email", "password", "confirmPassword"].find(
+        (f) => nextErrors[f]
+      );
+      if (firstField) {
+        try {
+          form.scrollToField(firstField);
+        } catch {
+          /* field not registered yet — ignore */
+        }
+      }
       return;
     }
+
     setSubmitting(true);
     try {
       // Drop confirmPassword before sending — backend doesn't need it.
-      const { confirmPassword: _omit, ...payload } = values;
+      // eslint-disable-next-line no-unused-vars
+      const { confirmPassword, ...payload } = {
+        name: raw.name.trim(),
+        email: raw.email.trim(),
+        password: raw.password,
+        confirmPassword: raw.confirmPassword,
+      };
       await signup(payload);
-      // After signup the user is signed in but unverified — send them to a
-      // page that explains "check your inbox" and offers a resend option.
       navigate("/verify-email", {
         replace: true,
-        state: { email: values.email },
+        state: { email: payload.email },
       });
     } catch (err) {
       setShakeKey((k) => k + 1);
       if (err instanceof ApiError && err.details) {
-        form.setFields(
-          Object.entries(err.details).map(([name, message]) => ({
-            name,
-            errors: [message],
-          }))
-        );
-        // Also surface a top-of-form banner — inline field errors alone are
-        // easy to miss (they sit far below the button), and the original
-        // server message often reads better than the per-field text.
+        setErrors((prev) => ({ ...prev, ...err.details }));
         setTopError(err.message || "Please fix the highlighted fields.");
       } else {
         setTopError(err.message || "Something went wrong. Try again.");
@@ -66,6 +114,34 @@ export function SignUpPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const clearFieldError = (field) => {
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  // Live mismatch detection on confirmPassword — surfaces the error as soon
+  // as the user types instead of waiting for submit. We re-validate against
+  // the current password field on every keystroke.
+  const handleConfirmChange = (value) => {
+    setErrors((prev) => {
+      const pw = form.getFieldValue("password") || "";
+      const next = { ...prev };
+      if (!value) {
+        // empty — let the submit validator handle "required"
+        delete next.confirmPassword;
+      } else if (pw && value !== pw) {
+        next.confirmPassword = "Passwords do not match";
+      } else {
+        delete next.confirmPassword;
+      }
+      return next;
+    });
   };
 
   return (
@@ -90,53 +166,45 @@ export function SignUpPage() {
           form={form}
           layout="vertical"
           requiredMark={false}
-          onFinish={handleSubmit}
-          onFinishFailed={() => setShakeKey((k) => k + 1)}
-          // Errors only appear once the user explicitly submits, instead
-          // of yelling at them while they're mid-typing.
-          validateTrigger="onSubmit"
+          onFinish={(e) => e?.preventDefault?.()}
           disabled={submitting}
           autoComplete="on"
         >
           <Form.Item
             name="name"
             label="Name"
-            rules={[
-              { required: true, message: "Please enter your name" },
-              { min: 2, message: "Name must be at least 2 characters" },
-            ]}
+            validateStatus={errors.name ? "error" : undefined}
+            help={errors.name}
           >
-            <Input size="large" placeholder="Jane Explorer" autoComplete="name" />
+            <Input
+              size="large"
+              placeholder="Jane Explorer"
+              autoComplete="name"
+              aria-invalid={Boolean(errors.name)}
+              onChange={() => clearFieldError("name")}
+            />
           </Form.Item>
 
           <Form.Item
             name="email"
             label="Email"
-            rules={[
-              { required: true, message: "Please enter your email" },
-              { type: "email", message: "Enter a valid email" },
-            ]}
+            validateStatus={errors.email ? "error" : undefined}
+            help={errors.email}
           >
-            <Input size="large" placeholder="you@example.com" autoComplete="email" />
+            <Input
+              size="large"
+              placeholder="you@example.com"
+              autoComplete="email"
+              aria-invalid={Boolean(errors.email)}
+              onChange={() => clearFieldError("email")}
+            />
           </Form.Item>
 
           <Form.Item
             name="password"
             label="Password"
-            rules={[
-              { required: true, message: "Please enter a password" },
-              { min: 8, message: "At least 8 characters" },
-              {
-                pattern: /(?=.*[A-Za-z])(?=.*\d)/,
-                message: "Must include a letter and a number",
-              },
-              {
-                validator: (_, value) =>
-                  !value || scorePassword(value).score >= 2
-                    ? Promise.resolve()
-                    : Promise.reject(new Error("Choose a stronger password")),
-              },
-            ]}
+            validateStatus={errors.password ? "error" : undefined}
+            help={errors.password}
             extra={
               <>
                 <PasswordStrengthMeter password={password} />
@@ -151,43 +219,33 @@ export function SignUpPage() {
               size="large"
               placeholder="••••••••"
               autoComplete="new-password"
+              aria-invalid={Boolean(errors.password)}
+              onChange={() => clearFieldError("password")}
             />
           </Form.Item>
 
           <Form.Item
             name="confirmPassword"
             label="Confirm password"
-            dependencies={["password"]}
-            // Override the form-level "onSubmit" trigger so the mismatch
-            // error surfaces the moment the user blurs / re-types — they
-            // don't have to click Sign up to discover the typo.
-            validateTrigger={["onBlur", "onChange"]}
-            rules={[
-              { required: true, message: "Please confirm your password" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue("password") === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error("Passwords do not match")
-                  );
-                },
-              }),
-            ]}
+            validateStatus={errors.confirmPassword ? "error" : undefined}
+            help={errors.confirmPassword}
           >
             <Input.Password
               size="large"
               placeholder="••••••••"
               autoComplete="new-password"
+              aria-invalid={Boolean(errors.confirmPassword)}
+              onChange={(e) => handleConfirmChange(e.target.value)}
+              onPressEnter={handleSubmit}
             />
           </Form.Item>
 
           <Button
             type="primary"
-            htmlType="submit"
+            htmlType="button"
             size="large"
             loading={submitting}
+            onClick={handleSubmit}
             block
           >
             Create account

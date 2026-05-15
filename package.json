@@ -11,7 +11,8 @@
     "dev": "cd client && vite",
     "build": "cd client && vite build",
     "lint": "cd client && eslint .",
-    "preview": "cd client && vite preview"
+    "preview": "cd client && vite preview",
+    "test:geo": "node --test client/src/services/ai/__tests__/geoValidator.test.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

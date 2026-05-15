@@ -37,7 +37,7 @@ export function FeaturedDestinations() {
     navigate(`/builder?prompt=${encodeURIComponent(`3-day trip to ${name}`)}`);
 
   return (
-    <section className="relative px-6 py-24 sm:py-28 max-w-7xl mx-auto">
+    <section className="relative px-4 sm:px-6 py-16 sm:py-24 lg:py-28 max-w-7xl mx-auto">
       <div className="flex items-end justify-between mb-12 flex-wrap gap-4">
         <div>
           <motion.span
@@ -50,7 +50,7 @@ export function FeaturedDestinations() {
             Where to next
           </motion.span>
           <motion.h2
-            initial={{ opacity: 0, y: 50, filter: "blur(10px)" }}
+            initial={{ opacity: 0, y: 50, filter: "blur(5px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ delay: 0.1, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -75,9 +75,9 @@ export function FeaturedDestinations() {
         </motion.button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-2 gap-4 h-auto md:h-[640px]">
+      <div className="grid grid-cols-1 md:grid-cols-12 md:grid-rows-2 gap-3 sm:gap-4 h-auto md:h-[640px]">
         <motion.button
-          initial={{ opacity: 0, y: 60, scale: 0.92, filter: "blur(10px)" }}
+          initial={{ opacity: 0, y: 60, scale: 0.92, filter: "blur(5px)" }}
           whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
           viewport={{ once: true, amount: 0.1, margin: "-80px" }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -85,7 +85,7 @@ export function FeaturedDestinations() {
           whileHover="hover"
           whileTap={{ scale: 0.97 }}
           onClick={() => goPlan(BIG.name)}
-          className="md:col-span-6 md:row-span-2 relative rounded-3xl overflow-hidden group border border-line surface-shadow text-left"
+          className="md:col-span-6 md:row-span-2 relative w-full max-w-full rounded-3xl overflow-hidden group border border-line surface-shadow text-left aspect-[16/10] md:aspect-auto"
         >
           <DestinationImage
             destination={BIG}
@@ -101,15 +101,17 @@ export function FeaturedDestinations() {
           >
             Featured
           </motion.span>
-          <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between text-white">
-            <div>
-              <span className="text-xs text-white/80 uppercase tracking-widest">
+          <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 flex items-end justify-between gap-3 text-white">
+            <div className="min-w-0">
+              <span className="text-[10px] sm:text-xs text-white/80 uppercase tracking-widest">
                 {BIG.region}
               </span>
-              <h3 className="text-3xl sm:text-5xl font-bold mt-1">
+              <h3 className="text-2xl sm:text-4xl lg:text-5xl font-bold mt-1 leading-tight">
                 {BIG.name}
               </h3>
-              <p className="text-white/85 mt-2 max-w-md">{BIG.short}</p>
+              <p className="text-sm sm:text-base text-white/85 mt-2 max-w-md line-clamp-2">
+                {BIG.short}
+              </p>
             </div>
             <motion.div
               variants={arrowHover}
@@ -123,7 +125,7 @@ export function FeaturedDestinations() {
         {REST.slice(0, 4).map((d, i) => (
           <motion.button
             key={d.id}
-            initial={{ opacity: 0, y: 60, scale: 0.9, filter: "blur(8px)" }}
+            initial={{ opacity: 0, y: 60, scale: 0.9, filter: "blur(4px)" }}
             whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.1, margin: "-80px" }}
             transition={{ duration: 0.7, delay: 0.1 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -131,7 +133,7 @@ export function FeaturedDestinations() {
             whileHover="hover"
             whileTap={{ scale: 0.95 }}
             onClick={() => goPlan(d.name)}
-            className="md:col-span-3 relative rounded-3xl overflow-hidden group border border-line surface-shadow text-left aspect-video md:aspect-auto"
+            className="md:col-span-3 relative w-full max-w-full rounded-3xl overflow-hidden group border border-line surface-shadow text-left aspect-[16/10] md:aspect-auto"
           >
             <DestinationImage
               destination={d}
